@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>杨佳豪 — 多模态大模型后训练 / AI Agent 工程师</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --blue: #2563EB;
+    --blue-rule: #3B82F6;
+    --navy: #1E3A8A;
+    --ink: #111;
+    --gray-band: #F3F4F6;
+    --todo-bg: #FFF3B8;
+    --todo-ink: #8a6d00;
+  }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: Georgia, "Times New Roman", "PingFang SC", "Hiragino Sans GB", "Noto Serif SC", serif;
+    color: var(--ink);
+    font-size: 11.5px;
+    line-height: 1.4;
+    background: #fff;
+  }
+  .page {
+    width: 210mm; min-height: 297mm; margin: 0 auto;
+    padding: 4.5mm 10.6mm 3mm;
+    background: #fff;
+  }
+  b, strong { font-weight: 700; }
+  a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; font-weight: 700; }
+  code { font-family: "Courier New", Courier, monospace; font-size: 10.5px; font-weight: 700; }
+  /* 数字指标统一样式：等宽数字，保证同类指标横向/纵向对齐 */
+  .metric {
+    font-family: "SF Mono", "SFMono-Regular", Menlo, Consolas, "Courier New", monospace;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  /* 变化类指标：前值/箭头/后值三栏，箭头纵向对齐成表格感 */
+  .metric.delta {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+  .metric.delta .before,
+  .metric.delta .after {
+    display: inline-block;
+    text-align: right;
+  }
+  .metric.delta .after { text-align: left; }
+  .metric.delta .arrow {
+    display: inline-block;
+    min-width: 1.2em;
+    text-align: center;
+    color: #999;
+    font-weight: 400;
+    margin: 0 2px;
+  }
+  /* 成果行：指标用固定间距横向排布 */
+  .result-line { text-align: justify; }
+  .result-line .metric { letter-spacing: 0; }
+  h1 {
+    font-size: 22px; letter-spacing: 1px; margin-bottom: 2px;
+    font-family: "PingFang SC", "Hiragino Sans GB", sans-serif; font-weight: 700;
+  }
+  .hline { font-size: 11.5px; margin-bottom: 1px; }
+  .hline .ico { display: inline-block; width: 14px; text-align: center; margin-right: 2px; }
+  .hline .sep { color: #666; margin: 0 5px; }
+  h2 {
+    font-family: "PingFang SC", "Hiragino Sans GB", sans-serif;
+    font-size: 17px; color: var(--blue); font-weight: 700;
+    margin: 5px 0 0;
+    break-after: avoid;
+  }
+  .rule { border: 0; border-top: 1.2px solid var(--blue-rule); margin: 1px 0 4px; }
+  .org { break-inside: avoid; }
+  .lead { color: var(--navy); font-weight: 700; margin-bottom: 5px; }
+  .org {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--gray-band); padding: 2px 8px; margin: 2px 0 2px;
+    border-radius: 2px;
+  }
+  .org .name { font-weight: 700; font-size: 12.5px; flex: 1 1 auto; min-width: 0; }
+  .org .name .tag { font-weight: 400; color: #444; font-size: 11px; }
+  .org .date { color: #333; font-size: 11px; white-space: nowrap; font-weight: 700; flex: none; margin-left: 8px; }
+  h3 { font-size: 12.5px; color: var(--navy); font-weight: 700; margin: 4px 0 1px; }
+  .role-line { margin-bottom: 2px; }
+  ul { list-style: none; }
+  li { padding-left: 14px; position: relative; margin-bottom: 1px; text-align: justify; }
+  li::before { content: "•"; position: absolute; left: 2px; top: 0; font-weight: 700; }
+  p { margin-bottom: 2px; }
+  li.sub { padding-left: 28px; margin-bottom: 1px; }
+  li.sub::before { content: "◦"; left: 16px; }
+  .todo {
+    background: var(--todo-bg); color: var(--todo-ink);
+    border-radius: 2px; padding: 0 3px; font-size: 10px;
+    font-family: "PingFang SC", sans-serif; font-weight: 400;
+  }
+  .resume {
+    display: grid;
+    gap: 24px;
+    justify-content: center;
+    padding: 24px;
+  }
+  body {
+    background: #f1f3f5;
+    color: #111;
+    font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
+  }
+  .profile {
+    position: relative;
+    min-height: 30mm;
+    text-align: center;
+  }
+  .portrait {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24mm;
+    height: 30mm;
+    object-fit: cover;
+  }
+  h1.profile-name {
+    margin: 0 0 2pt;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  h1.profile-name::after {
+    content: "";
+    display: block;
+    width: 15mm;
+    height: 1mm;
+    margin: 2.5mm auto 0;
+    border-radius: 2px;
+    background: var(--blue);
+  }
+  .tagline {
+    margin: 1.5mm 0 0;
+    font-size: 15.5px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #1d4ed8;
+    letter-spacing: 0.3px;
+  }
+  .contact-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5mm;
+    margin-top: 2mm;
+    font-size: 12px;
+    line-height: 1;
+    color: #374151;
+  }
+  .contact-line span {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.5mm;
+    white-space: nowrap;
+  }
+  .contact-line svg {
+    width: 4mm;
+    height: 4mm;
+    flex: none;
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .company-logo {
+    height: 4mm;
+    width: auto;
+    margin-right: 1.5mm;
+    vertical-align: -1.2mm;
+    object-fit: contain;
+    border: none;
+  }
+  @media print { .page { margin: 0; width: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="profile">
+  <img class="portrait" src="assets/profile.jpg" alt="杨佳豪证件照">
+  <h1 class="profile-name">杨佳豪</h1>
+  <p class="tagline">应届生 ·  AI Agent 工程师</p>
+  <div class="contact-line">
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.66 2.81a2 2 0 0 1-.45 2.11L8.05 9.91a16 16 0 0 0 6.04 6.04l1.27-1.27a2 2 0 0 1 2.11-.45c.91.31 1.85.53 2.81.66A2 2 0 0 1 22 16.92Z"/></svg>
+      18906074670
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="m22 6-10 7L2 6"/></svg>
+      jiahao23a@163.com
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1"/><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M8 7v12M16 7v12"/></svg>
+      应届生
+    </span>
+    <span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V4"/><path d="M4 4h10l1 3h5v10h-9l-1-3H4"/></svg>
+      中共党员
+    </span>
+  </div>
+</header>
+
+<h2>教育背景</h2>
+<hr class="rule">
+<div class="org">
+  <span class="name">深圳大学 <span class="tag">· 计算机技术（硕士）</span></span>
+  <span class="date">2024.09 – 2027.06</span>
+</div>
+<div class="org">
+  <span class="name">南昌航空大学 <span class="tag">· 数据科学与大数据技术（本科）</span></span>
+  <span class="date">2020.09 – 2024.06</span>
+</div>
+<ul>
+  <li>本科：学业奖学金 <span class="metric">4</span> 次、<span class="metric">国家励志奖学金 2 次</span>、优秀毕业生、<span class="metric">2023 计算机设计大赛国赛三等奖</span>；
+  <br>硕士：二等奖学金 <span class="metric">2</span> 次、参与中国南山集团合作项目
+  </li>
+</ul>
+
+<h2>实习经历</h2>
+<hr class="rule">
+<div class="org">
+  <span class="name"><img class="company-logo" src="assets/tencent-brand-color.png" alt=""> <span class="tag">—— CSIG 优图实验室 · 应用研究</span></span>
+  <span class="date">2026.02 – 2026.08</span>
+</div>
+
+<h3>课题一：代码生成 Agent 引擎（CodeForge）</h3>
+<p><b>场景：</b>代码生成 Agent「澄清 → 规划 → 写代码 → 构建 → 部署」全流程落地，主要解决<b>生成效率低、生成质量差</b>两大难题。在「多级委托 → 单主 Agent」架构升级下，主导上下文管理与质量闭环的方案设计与落地。</p>
+<ul>
+  <li><b>单主 Agent 架构重构（提效）：</b>通过全链路调用链与耗时剖析定位「多级委托」下跨 Agent 上下文丢失、子 Agent 重复探索脚手架、token 预算撞墙三大瓶颈，重构为「单主 Agent + 按需子代理」，规划/实现/验证收敛为一人执行，子代理降级为工具且禁止递归派生，从根源消除上下文传递损耗。</li>
+  <li><b>三级上下文压缩（提效）：</b>主导实现「历史裁剪 + 工具结果零成本摘要 + 长会话阈值 LLM 摘要」三级上下文压缩，统一 token 预算。</li>
+  <li><b>质量反思闭环（提质）：</b>针对「编译通过但运行异常」的典型失效，主导实现「构建校验 → 渲染断言 → 交互回归 → 修复验证」闭环，输出结构化缺陷诊断驱动 LLM 定向修复，并以硬性恢复判定拦截「假交付」。</li>
+  <li><b>可量化评估体系：</b>与业务共同设计 <span class="metric">20+</span> 场景端到端用例，建立生成时长、一次构建通过率、需求达成率、缺陷率等度量指标，支撑「评测 → 定位 → 修复」迭代。</li>
+</ul>
+<p class="result-line"><b>成果：</b>生成时长 <span class="metric delta"><span class="before">8</span><span class="arrow">→</span><span class="after">5</span></span> 分钟（<span class="metric">-38%</span>）；缺陷率 <span class="metric delta"><span class="before">29.5%</span><span class="arrow">→</span><span class="after">17.1%</span></span>（<span class="metric">-42%</span>）、需求达成率 <span class="metric delta"><span class="before">88%</span><span class="arrow">→</span><span class="after">96.4%</span></span>、一次构建通过率 <span class="metric delta"><span class="before">84.4%</span><span class="arrow">→</span><span class="after">88.6%</span></span>。</p>
+
+<h3>课题二：多模态大模型人类意图理解后训练框架（EVIDE）｜AAAI 2027 在投（一作）· 专利已申请</h3>
+<p><b>场景：</b>智能客服/心理的咨询多为「视频+音频」，用户真实意图往往藏在表情、语气等副语言线索里——例如「嘴上答应、表情却犹豫」这类需要跨模态细粒度判断的情形。现有 Omni 模型面对两大痛点：<b>标注成本高</b>（手工标注CoT、离线蒸馏）与<b>模态信息损失</b>（易退化为只抓单一显著模态的捷径）。针对此，将隐式 CoT 重构为显式证据解耦推理链，强迫模型先分别提取视听证据、再跨模态融合推理。</p>
+<ul>
+  <li><b>EDSD 证据分解自蒸馏：</b>特权教师-学生 on-policy 自蒸馏，教师条件于参考答案注入证据，学生对齐其 token 级分布，实现<b>零标注成本</b>；以对称 Generalized-JSD 替代 KL 抑制长度爆炸，指数位置衰减聚焦早期证据 token。</li>
+  <li><b>MIRL 模态重要性强化学习：</b>在 GRPO 上引入反事实模态消融估计各模态的因果贡献，据此分配优势信号——正样本 rollout 强化关键模态、负样本 rollout 惩罚导致错误的模态，避免单一显著模态支配奖励、跨模态线索被忽略。</li>
+  <li><b>训练工程：</b>基于 Open-R1/TRL 二次开发多模态 GRPO 训练器，独立实现 token-local advantage（证据段级优势重分配）；DeepSpeed ZeRO-3 分布式训练，LoRA 仅解冻 LLM 主干、冻结视听编码器。</li>
+</ul>
+<p class="result-line"><b>成果：</b>在 HumanSense 基准上，EVIDE-30B 较 Qwen-Omni 基线准确率 <span class="metric">+6.9%</span>、EVIDE-7B <span class="metric">+11.5%</span> 且追平 30B，IntentBench 跨基准 <span class="metric">+7.3%</span>；MIRL 不引入可训练参数或额外反向传播，仅增加两次推理前向（<span class="metric">+5%~8%</span>）。</p>
+
+<h2>项目经历</h2>
+<hr class="rule">
+<div class="org">
+  <span class="name">多路混合检索与知识图谱驱动的研发知识检索平台 <span class="tag">· 独立开发</span></span>
+  <span class="date">2025.12 – 2026.01</span>
+</div>
+<div class="role-line">
+<p><b>简介：</b>独立开发的通用研发知识检索平台，以学术论文（arXiv为落地场景，覆盖「文档入库→多路检索→意图理解→模型生成→溯源反馈」完整链路，通过四通道并行召回 + RRF 融合、两级精读与 ReAct 编排实现带溯源回答的端到端闭环。</p>
+<ul>
+  <li><b>多路混合检索：</b>向量（Milvus）、关键词（ES BM25）、知识图谱（LightRAG）、联网搜索四通道并行召回，RRF 融合 + Rerank 精排，支持引用链多跳推理；并设计「abstract 全局召回 + 按需拉取 arXiv 全文」两级精读（仅索引摘要，单篇成本约 <span class="metric">0.2KB</span>）。自建 <span class="metric">50</span> 个测试场景，Recall@10 <span class="metric">88.6%</span>、MRR <span class="metric">0.72</span>，融合较单路提升 <span class="metric">12.3%</span>。</li>
+  <li><b>问题理解与意图路由：</b>Query 改写 + 多问题分解，LLM 打分 + 树形意图识别，设计「KB 召回节点 + MCP 精读节点」两级意图联动路由；将第一级命中摘要（含 arxiv_id）注入第二级 MCP 参数提取，由 LLM 自动抽取论文编号驱动全文拉取，免去人工指定编号。Top-1 准确率 <span class="metric">92.5%</span>；</li>
+  <li><b>模型工程化与 Agent 编排：</b>基于 <b>Java + Spring Boot</b> 搭建服务端（<b>MyBatis-Plus</b> 持久层、<b>Redis</b> 缓存、<b>RocketMQ</b> 异步入库），抽象多供应商 Chat/Embedding/Rerank 统一客户端，多候选路由 + 熔断降级，流式首包 <span class="metric">P50 1.8s</span>；MCP 对接 Semantic Scholar，ReAct 编排生成带逐句引用的文献综述。</li>
+</ul>
+
+<h2>专业技能</h2>
+<hr class="rule">
+<ul>
+  <li>熟悉 <b>Python、PyTorch</b>，掌握 <b>SFT / GRPO / RLHF</b> 等大模型后训练范式，熟悉 <b>LoRA、DeepSpeed ZeRO-3</b> 分布式训练与多模态微调</li>
+  <li>熟悉 <b>LangChain、LangGraph</b> 等大模型应用开发框架，掌握 <b>上下文管理、记忆存储、工具调用（MCP）</b> 与 <b>token 预算控制</b>，熟悉 <b>ReAct、多智能体协作</b> 等 Agent 编排范式</li>
+  <li>熟悉 <b>RAG</b> 完整链路，掌握 <b>语义分块、向量/关键词/知识图谱多路召回、RRF 融合与重排序</b> 策略，熟悉 <b>Milvus</b> 向量数据库</li>
+  <li>熟悉 <b>MySQL</b> 数据库的使用，对<b>索引、锁机制、事务、日志</b>有一定理解</li>
+  <li>熟悉 <b>Redis</b> 的使用，熟悉五种常见数据类型，对<b>缓存持久化、缓存穿透、缓存击穿</b>有一定理解</li>
+  <li>熟悉 <b>Linux</b> 系统及常用命令的使用，熟练使用 <b>Git</b> 进行版本管理与团队协作，对 <b>Docker</b> 有一定理解</li>
+</ul>
+
+</div>
+</body>
+</html>

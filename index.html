@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八股背诵 · 总索引</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 32px; }
+  body.viewer-mode .wrap { max-width: 1400px; padding-bottom: 0; }
+  header { background: linear-gradient(135deg, #111827, #374151); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; text-align: center; }
+  header h1 { font-size: 24px; font-weight: 800; }
+  header p { opacity: .85; font-size: 13px; margin-top: 8px; }
+  .group { margin-bottom: 20px; }
+  .group h2 { font-size: 14px; color: var(--muted); margin-bottom: 10px; letter-spacing: .5px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  a.card, .card-btn {
+    display: block; width: 100%; text-align: left;
+    background: var(--card); border-radius: 10px; padding: 14px 16px;
+    text-decoration: none; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    border: 1px solid transparent; transition: .15s; cursor: pointer;
+    font-family: inherit; font-size: inherit;
+  }
+  a.card:hover, .card-btn:hover { border-color: var(--blue); transform: translateY(-2px); }
+  .card-btn.active { border-color: var(--blue); background: #eff6ff; box-shadow: 0 2px 8px rgba(37,99,235,.12); }
+  .card-btn.active .t { color: var(--navy); }
+  .card .t, .card-btn .t { font-weight: 700; font-size: 14.5px; margin-bottom: 4px; }
+  .card .d, .card-btn .d { font-size: 12px; color: var(--muted); }
+  .tag { display:inline-block; font-size: 11px; padding: 1px 8px; border-radius: 12px; margin-right: 4px; margin-top: 6px; background: #eff6ff; color: #1d4ed8; }
+
+  /* 查看器区域 */
+  body.viewer-mode { overflow: hidden; }
+  .viewer { display: none; margin-top: 8px; height: calc(100vh - 32px); }
+  .viewer.show { display: flex; flex-direction: column; }
+  .viewer-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 10px 10px 0 0;
+    padding: 10px 16px;
+  }
+  .viewer-bar .title { font-weight: 700; font-size: 14px; color: var(--navy); }
+  .viewer-bar .actions { display: flex; gap: 8px; }
+  .viewer-bar button {
+    border: 1px solid #c7d4f0; background: #fff; color: #2563EB;
+    font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 16px; cursor: pointer; transition: .15s;
+  }
+  .viewer-bar button:hover { background: #2563EB; color: #fff; }
+  iframe {
+    display: block; width: 100%; flex: 1 1 auto; min-height: 0;
+    border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; background: #fff;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header id="pageHeader">
+  <h1>八股背诵 · 总索引</h1>
+  <p>基于你的简历整理。点击卡片在<b>本页内</b>直接查看内容；「个人简历」在新窗口打开。点击「回到索引」可返回本列表。</p>
+</header>
+
+<!-- 索引区 -->
+<div id="indexArea">
+  <div class="group">
+    <h2>简历</h2>
+    <div class="grid">
+      <a class="card" href="resume-2.html" target="_blank">
+        <div class="t">个人简历 ↗</div>
+        <div class="d">杨佳豪 · 多模态大模型后训练 / AI Agent 工程师</div>
+        <span class="tag">应届生</span><span class="tag">深圳大学硕士</span>
+      </a>
+      <button class="card-btn" data-src="00-面试自我介绍.html">
+        <div class="t">面试自我介绍</div>
+        <div class="d">3-5 分钟完整版背诵稿</div>
+        <span class="tag">场景化</span><span class="tag">背诵稿</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>维度一 · 按项目分类</h2>
+    <div class="grid">
+      <button class="card-btn" data-src="01-CodeForge-Agent引擎.html">
+        <div class="t">CodeForge Agent 引擎</div>
+        <div class="d">架构重构 + 上下文管理 + 质量闭环</div>
+        <span class="tag">ReAct</span><span class="tag">上下文管理</span><span class="tag">MCP</span>
+      </button>
+      <button class="card-btn" data-src="02-EVIDE-多模态后训练.html">
+        <div class="t">EVIDE 多模态后训练</div>
+        <div class="d">AAAI 2027 一作论文 · 腾讯优图</div>
+        <span class="tag">GRPO/RLHF</span><span class="tag">LoRA/ZeRO</span><span class="tag">自蒸馏/反事实</span>
+      </button>
+      <button class="card-btn" data-src="03-RAGent-检索平台.html">
+        <div class="t">RAGent 检索平台</div>
+        <div class="d">RAG + Java 后端 + 数据库</div>
+        <span class="tag">多路召回/RRF</span><span class="tag">Spring Boot</span><span class="tag">MySQL/Redis</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>维度二 · 按技术类别分类</h2>
+    <div class="grid">
+      <button class="card-btn" data-src="技术类别-01-大模型后训练.html">
+        <div class="t">大模型后训练</div>
+        <div class="d">训练范式 · 参数高效 · 分布式 · 多模态</div>
+        <span class="tag">SFT/RLHF/DPO/GRPO</span>
+      </button>
+      <button class="card-btn" data-src="技术类别-02-Agent工程.html">
+        <div class="t">Agent 工程</div>
+        <div class="d">编排范式 · 上下文管理 · 协议框架</div>
+        <span class="tag">ReAct/MCP/LangGraph</span>
+      </button>
+      <button class="card-btn" data-src="技术类别-03-RAG检索.html">
+        <div class="t">RAG 检索</div>
+        <div class="d">多路召回 · 融合排序 · 指标</div>
+        <span class="tag">RRF/Rerank/Milvus</span>
+      </button>
+      <button class="card-btn" data-src="技术类别-04-Java后端.html">
+        <div class="t">Java 后端</div>
+        <div class="d">集合 · 并发 · JVM · Spring · MQ</div>
+        <span class="tag">HashMap/线程池/Spring</span>
+      </button>
+      <button class="card-btn" data-src="技术类别-05-数据库.html">
+        <div class="t">数据库</div>
+        <div class="d">MySQL 索引/事务/锁 · Redis</div>
+        <span class="tag">B+树/MVCC/缓存三兄弟</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 查看器 -->
+<div class="viewer" id="viewer">
+  <div class="viewer-bar">
+    <span class="title" id="viewerTitle">内容</span>
+    <div class="actions">
+      <button id="btnOpen">新窗口打开 ↗</button>
+      <button id="btnBack">← 回到索引</button>
+    </div>
+  </div>
+  <iframe id="frame" title="内容查看"></iframe>
+</div>
+
+<script>
+(function () {
+  var indexArea = document.getElementById('indexArea');
+  var viewer = document.getElementById('viewer');
+  var frame = document.getElementById('frame');
+  var viewerTitle = document.getElementById('viewerTitle');
+  var btnBack = document.getElementById('btnBack');
+  var btnOpen = document.getElementById('btnOpen');
+  var pageHeader = document.getElementById('pageHeader');
+
+  var currentSrc = '';
+  var currentTitle = '';
+
+  document.querySelectorAll('.card-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.card-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+
+      currentSrc = btn.getAttribute('data-src');
+      currentTitle = btn.querySelector('.t').textContent;
+
+      viewerTitle.textContent = currentTitle;
+      frame.src = currentSrc;
+      viewer.classList.add('show');
+      indexArea.style.display = 'none';
+      pageHeader.style.display = 'none';
+      document.body.classList.add('viewer-mode');
+      window.scrollTo(0, 0);
+    });
+  });
+
+  btnBack.addEventListener('click', function () {
+    viewer.classList.remove('show');
+    indexArea.style.display = '';
+    pageHeader.style.display = '';
+    document.body.classList.remove('viewer-mode');
+    frame.src = 'about:blank';
+    document.querySelectorAll('.card-btn').forEach(function (b) { b.classList.remove('active'); });
+    window.scrollTo(0, 0);
+  });
+
+  btnOpen.addEventListener('click', function () {
+    if (currentSrc) window.open(currentSrc, '_blank');
+  });
+})();
+</script>
+
+</body>
+</html>

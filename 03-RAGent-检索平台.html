@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面试梳理 · RAGent 研发知识检索平台</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --line: #e5e7eb; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --purple: #7c3aed; --purple-l: #a855f7;
+    --green: #059669; --green-bg: #ecfdf5;
+    --red: #dc2626; --red-bg: #fef2f2;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.75; padding: 32px 16px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  header { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; border-radius: 14px; padding: 30px 34px; margin-bottom: 20px; }
+  header h1 { font-size: 23px; font-weight: 800; letter-spacing: .5px; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 12px; padding: 24px 28px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 18px; color: #7c3aed; border-left: 4px solid #a855f7; padding-left: 10px; margin-bottom: 16px; }
+  .section h3 { font-size: 15px; color: #1e3a8a; margin: 20px 0 8px; }
+  .section h3:first-of-type { margin-top: 0; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #d5c3f7; box-shadow: 0 2px 8px rgba(124,58,237,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #f4effe; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #a855f7; color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q.p .qicon { background: #2563EB; }   /* 项目问题 */
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { position: relative; padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #ede4fc; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: #7c3aed; }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: #a855f7; background: #fff; box-shadow: 0 0 0 2px rgba(168,85,247,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #d5c3f7; background: #fff; color: #7c3aed; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #7c3aed; color: #fff; }
+  .hl { background: var(--tag); color: var(--tag-ink); padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 12.5px; }
+  .hl.g { background: var(--green-bg); color: var(--green); }
+  .hl.r { background: var(--red-bg); color: var(--red); }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; }
+  .tip b { color: #92400e; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #f4effe; color: #7c3aed; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  .flow { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 8px 0; font-size: 13px; }
+  .flow .step { display: inline-block; background: #eef2ff; color: #4338ca; border-radius: 6px; padding: 1px 8px; margin: 2px 4px 2px 0; font-weight: 600; }
+  .nav { position: sticky; top: 12px; z-index: 10; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .nav a { color: #4f46e5; text-decoration: none; font-size: 12.5px; margin-right: 14px; white-space: nowrap; }
+  .nav a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>RAGent — 多路混合检索与知识图谱驱动的研发知识检索平台</h1>
+  <p>独立开发 · Java 17 + Spring Boot 3 + 多路混合检索 + 两级精读 + 多知识库路由 + Agent 编排 · 面试技术梳理</p>
+  <span class="badge">多路检索 / RRF / Rerank</span>
+  <span class="badge">向量 / ES / LightRAG</span>
+  <span class="badge">两级精读 / arXiv MCP</span>
+  <span class="badge">多知识库路由 / 分库</span>
+  <span class="badge">Java / Spring Boot / Redis / RocketMQ</span>
+  <span class="badge">熔断 / 并发 / 可观测</span>
+</header>
+
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#7c3aed; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+
+<div class="nav">
+  <a href="#intro">① 项目介绍与技术细节</a>
+  <a href="#sharding">↳ 分库方案</a>
+  <a href="#project-qa">② 简历项目追问</a>
+  <a href="#bagu">③ 八股专题</a>
+</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="tip">
+  <b>💡 使用建议：</b>本文档分三部分——<b>第一部分</b>把项目完整链路和每个模块的技术细节讲透（回答"你做了什么、怎么做的、为什么这么做"），并按 <b>「问题理解与意图路由 → 多路混合检索 → 模型工程化与 Agent 编排」</b> 三个模块展开，其中 <b>1.4 两级精读</b> 和 <b>1.5 多知识库分库</b> 是本项目的<b>两大核心亮点</b>，务必吃透；<b>第二部分</b>模拟面试官拿到简历后针对每一条描述的<b>连环追问</b>，训练"简历上的每个字都能展开讲 3 分钟"；<b>第三部分</b>是项目背后必考的<b>八股</b>。建议先吃透第一部分，再用第二部分自测，最后查漏第三部分。点击问题可折叠/展开答案。
+</div>
+
+<!-- ================================================================ -->
+<div class="section" id="intro">
+  <h2>一、项目介绍与详细技术细节</h2>
+
+  <div class="qa">
+    <div class="q">一句话介绍项目（电梯陈述）</div>
+    <div class="a">
+      <p>本项目的定位是<b>多路混合检索与知识图谱驱动的研发知识检索平台</b>；它面向所有<b>"想快速了解某个技术方向、搞清某个领域"的人</b>——在校研究生、工程师；以 arXiv 学术论文为落地场景，覆盖<b>「文档入库 → 多路检索 → 意图理解 → 模型生成 → 溯源反馈」的完整链路</b>，核心是<b>问题理解与意图路由、四通道并行召回 + RRF 融合、两级精读 + ReAct 编排</b>，实现带溯源回答的端到端闭环。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">它和传统的 RAG 有什么不同？</div>
+    <div class="a">
+      <p>先给直觉：<b>传统 RAG 是"单路问答"，本项目是"懂行的多路检索平台"。</b>传统 RAG 一般是「一个向量库 + 一次相似度检索 + 拼进 prompt 生成」，比较"朴素"；本项目在它基础上做了四层进阶：</p>
+      <ul>
+        <li><b>① 从"单路召回"到"多路混合召回"</b>：传统 RAG 只靠向量语义相似度一路召回，对精确编号、专有名词、引用链多跳、"库里没有"的问题容易漏。本项目四通道（向量 Milvus / 关键词 BM25 / 知识图谱 LightRAG / 联网搜索）并行召回 + RRF 融合 + Rerank 精排，把"找得全"和"排得准"解耦，实测较单路向量 Recall@10 提升 12.3%。</li>
+        <li><b>② 从"无脑检索"到"意图理解 + 路由"</b>：传统 RAG 不区分问题类型，一律按相似度查同一个库；本项目先用 LLM 打分 + 树形意图识别，把复杂问题重写、拆分成子问题，再路由到对应知识库或 MCP 工具（如精读论文），还能自动衔接「先定位论文 → 再拉全文精读」两级联动。</li>
+        <li><b>③ 从"全文入库"到"两级精读"</b>：传统 RAG 把文档全文向量化入库（索引膨胀 + 召回噪音）；本项目只索引摘要（单篇约 0.2KB），第一级低成本召回定位"是哪几篇论文"，第二级按需经 MCP 实时拉 arXiv 全文精读技术细节。</li>
+        <li><b>④ 从"单图/单模型"到"多图谱 + 模型工程化"</b>：引入知识图谱支持引用链多跳推理；服务端抽象多供应商模型客户端 + 三态熔断降级 + 流式输出，并用 Redis/RocketMQ 做工程保障。</li>
+      </ul>
+      <p>一句话：<b>传统 RAG 回答"相关不相关"，本项目追求"理解意图 → 多路找全 → 精排找准 → 溯源作答"的完整闭环</b>，更接近一个生产级研发知识检索平台。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">系统是如何建立知识库的？</div>
+    <div class="a">
+      <p>先给直觉：<b>知识库不是"塞进去一坨文档"就完事，而是每条数据都要同时做成"可语义检索、可精确匹配、可图谱多跳、可溯源"的形态。</b>以 arXiv 论文入库为例，走一条「上传 → 分块 → 多渠道索引 → 异步入库」的流水线：</p>
+      <div class="flow">
+        <span class="step">1 文档上传</span> <span class="step">2 清洗/解析</span> <span class="step">3 分块</span> <span class="step">4 向量化 + 写向量库</span> <span class="step">5 同步关键词索引</span> <span class="step">6 图谱抽取实体/关系</span> <span class="step">7 落库(metadata)</span>
+      </div>
+      <ul>
+        <li><b>上传与清洗</b>：文档上传接口接收文件，附带 <code>metadata</code>（如 <code>category</code> 学科类别），解析正文并清洗格式。</li>
+        <li><b>分块（chunking）</b>：把长文档切成语义相对完整的块，块太小上下文割裂、太大信息稀释，再逐块做 Embedding。</li>
+        <li><b>多渠道索引</b>（核心）：一次入库同时建立多套索引——<b>① 向量</b>写进 Milvus（<code>title+abstract+arxiv_id+metadata</code>）；<b>② 关键词</b>写进 ES 做 BM25；<b>③ 图谱</b>由 <code>GraphSyncingVectorStoreService</code> 在向量入库时<b>自动抽取实体和关系</b>写入 LightRAG 图存储（Neo4j），不用手动建图。这就是"四通道"各自有料可查的根基。</li>
+        <li><b>异步入库 + 幂等</b>：入库/分块/删除这类重活通过 <b>RocketMQ 异步</b>处理，配合<b>事务消息 + 幂等</b>保证任务不重不漏，不阻塞检索主链路。</li>
+        <li><b>两级精读的落点</b>：学术库只存「标题 + 摘要 + arxiv_id」（单篇约 0.2KB），全文不上库、按需实时拉取——这样既覆盖百万级论文，又控制存储与噪音。</li>
+      </ul>
+      <p>一句话：<b>知识库 = 同一个文档被同时"向量化、关键词化、图谱化"成多份可检索形态，并带结构化 metadata 支撑学科过滤与溯源。</b></p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">用户的一次提问，系统内部是怎么一步步处理的？（通俗版流程）</div>
+    <div class="a">
+      <p>先给直觉：这个平台就是一个"懂行的检索助手"。你抛一个问题，它内部走三步——<b>① 听懂问题并分流 → ② 多路去找 → ③ 层层筛选出最靠谱的几段</b>。展开讲：</p>
+      <ol>
+        <li><b>问题理解与意图路由</b>：大模型先把复杂问题<b>重写、切分成最小的子问题</b>，再根据 LLM 打分，判断每个子问题该走哪个<b>意图路由</b>——也就是该查哪个知识库、要不要调用某个外部工具（如精读论文的 MCP 工具）。</li>
+        <li><b>四路并行召回</b>：意图定下来后，针对每个子问题<b>同时用 4 种方式召回</b>（向量语义 / 关键词 / 知识图谱 / 联网搜索），先把候选资料"广撒网"捞一批出来。</li>
+        <li><b>RRF 融合 + Rerank 精排</b>：把 4 路结果按"名次"加权合并，<b>粗排出 Top50</b>，再换成更精细的精排模型，选出最相关的 <b>Top10</b>，最终拼成<b>带引用</b>的上下文交给大模型生成，返回给用户。</li>
+      </ol>
+      <p>下面就从"问题理解与意图路由"这个入口环节开始，逐块展开每个环节的技术细节。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">整体架构（一句话）</div>
+    <div class="a">
+      <p>前后端分离的<b>「模块化单体」</b>——后端按职责拆成 4 个 Maven 模块，各管各的：<code>framework</code>（通用基础设施）、<code>infra-ai</code>（AI 能力层，封装各家大模型/向量库）、<code>bootstrap</code>（RAG 业务主流程）、<code>mcp-server</code>（独立的 MCP 工具服务，供模型调用外部工具）。</p>
+      <p>这么分层的好处用一个场景就说明白：<b>想换个模型供应商、或换套向量数据库，只需改 <code>infra-ai</code> 里的实现，业务主流程一行不用动</b>。把「业务编排、AI 供应商差异、通用基础设施」三件事隔离开，互不干扰，维护起来清晰很多。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">一次提问的完整调用链路（整体印象）</div>
+    <div class="a">
+      <div class="flow">
+        <span class="step">1 查询重写</span> <span class="step">2 多问题拆分</span> <span class="step">3 意图识别路由</span> <span class="step">4 多路并行召回</span> <span class="step">5 去重</span> <span class="step">6 RRF 融合</span> <span class="step">7 Rerank 精排</span> <span class="step">8 富化</span> <span class="step">9 拼上下文(带引用)</span> <span class="step">10 流式生成</span> <span class="step">11 溯源反馈</span>
+      </div>
+      <p>用一个真实问题把整条链路串起来——<b>「RAG 最新进展？内部有没有相关方案？再精读那篇多模态 RAG 论文」</b>：系统先把这句话<b>重写、拆成三个子问题</b>，分别命中 <code>paper</code>（查论文）/ <code>internal-tech</code>（查内部文档）/ <code>paper-detail</code>（精读论文）三个意图，<b>各自路由到不同的库或工具</b>；每个子问题内部再做「四通道并行召回 → RRF 融合 → Rerank 精排」；第三个子问题走两级精读（先搜摘要定位 → 自动提取论文编号 → 经 MCP 实时拉全文）；最后把各部分结果合并，走模型路由（含熔断）<b>流式输出带引用的回答</b>。</p>
+      <p>简单说：<b>一次提问 = "读懂问题 → 分流到多个库去找 → 各自精挑 → 汇总成答案"</b>，下面从第一步"读懂问题"开始拆解。</p>
+    </div>
+  </div>
+
+  <h3>模块一 · 问题理解与意图路由（简历句②：Query 改写 + 树形意图识别）</h3>
+
+  <div class="qa">
+    <div class="q">意图识别是怎么做的？（学科→方向→子方向）</div>
+    <div class="a">
+      <p>先给直觉：<b>系统得先"听明白"你在问哪类问题，才知道去哪个库找、要不要调工具。</b>这一步不是靠关键词硬匹配，而是让大模型"打分"判断。具体分几步：</p>
+      <ul>
+        <li><b>并行分类</b>：核心类 <code>IntentResolver</code> 拿到<b>重写+拆分</b>后的多个子问题，用 <code>CompletableFuture.supplyAsync(..., intentClassifyExecutor)</code> 对<b>每个子问题并行</b>分类，而不是一个个等。</li>
+        <li><b>LLM 打分 + 过滤</b>：分类器 <code>IntentClassifier</code> 基于 <b>LLM 打分</b>，给每个意图节点打分，再用 <code>filter(score &gt;= INTENT_MIN_SCORE)</code> 筛掉低分、<code>limit(MAX_INTENT_COUNT)</code> 限制数量。</li>
+        <li><b>树形结构</b>：意图本身是一棵「学科 → 方向 → 子方向」的<b>层级树</b>（存在 <code>IntentNode</code>，由 <code>IntentTreeFactory</code> / <code>IntentTreeCacheManager</code> 构建与缓存），支持<b>由粗到细</b>逐层定位。</li>
+        <li><b>数量保底策略</b>（<code>capTotalIntents</code>）：当子问题太多、意图总数超限时，<b>每个子问题至少保留 1 个最高分意图</b>，剩下的配额再按分数从高到低分——<b>避免某个子问题被"剃光头"导致漏检索</b>。</li>
+        <li>万一分类本身失败，<b>降级为空意图</b>放行，不影响整体流程。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">「KB 召回节点 + MCP 精读节点」两级意图联动路由是怎么设计的？（核心创新）</div>
+    <div class="a">
+      <p>针对学术论文「先检索、再精读」的场景，普通单级意图路由要么只召回摘要、要么直接调工具，无法自然衔接「先定位是哪篇论文、再拉全文精读」。我设计了<b>两级意图联动路由</b>：</p>
+      <div class="flow">
+        <span class="step">第一级 KB 召回节点（paper）</span>
+        <span class="step">学术摘要库全局召回 → 命中摘要（含 arxiv_id）</span>
+        <span class="step">命中上下文注入</span>
+        <span class="step">第二级 MCP 精读节点（paper-detail）</span>
+        <span class="step">LLM 自动提取 arxivId → 拉全文精读</span>
+      </div>
+      <ul>
+        <li><b>第一级 <code>paper</code>（KB 召回节点）</b>：驱动学术摘要库 <code>paperarxivstore</code> 全局召回，返回命中摘要及其元信息 <code>arxiv_id</code>。</li>
+        <li><b>两级衔接（关键）</b>：将第一级命中摘要（含 <code>arxiv_id</code>）作为「命中上下文」注入第二级 MCP 工具 <code>arxiv_fetch_fulltext</code> 的参数提取阶段，由 LLM 从「用户问题 + 命中摘要」中自动抽取 <code>arxivId</code>，驱动全文拉取——<b>用户全程无需手输论文编号</b>。</li>
+        <li><b>参数提取防坑</b>：<code>McpParameterExtractor.extractParametersWithContext(...)</code> 的参数提取 Prompt 刻意<b>移除示例编号</b>，并强化「必须从命中资料实际内容提取、禁止沿用示例/编造」的约束，避免 LLM 照抄示例而非提取真实编号。</li>
+        <li><b>兜底</b>：MCP 精读节点本身也绑定学术库 collection，即使第一级 KB 召回节点没单独命中，也能驱动学术库召回，保证命中上下文里总有 <code>arxiv_id</code> 的来源。</li>
+      </ul>
+      <p>这条联动路由就是 <b>「abstract 全局召回 + 按需拉取 arXiv 全文」两级精读</b> 在意图层的落地点：第一级低成本、广覆盖地"定位是哪几篇论文"，第二级按需、局部地"精读具体技术细节"。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">多知识库路由和"定向 vs 全局"检索怎么决策？</div>
+    <div class="a">
+      <p>先给直觉：判断出意图后，系统面临一个选择——<b>"我很确定该去哪个库"还是"我不太确定、那就到处都搜一下"。</b>对应两种策略：</p>
+      <ul>
+        <li><b>多知识库路由</b>：根据意图识别结果，把子问题<b>送进对应的知识库</b>；同时支持 <b>MCP 工具意图</b>，像"查天气/查票务"这类请求直接路由到外部工具，不进知识库。</li>
+        <li><b>定向 vs 全局</b>（<code>RetrievalScopeResolver</code>）：只看知识库意图的<b>最高分</b>，只有高到越过 <code>confidenceThreshold</code> 才收窄到那个库（<b>定向检索</b>）；否则保守起见，走<b>全局检索</b>（所有库都找）。</li>
+        <li><b>兜底设计（很关键）</b>：即使是定向检索，也会额外给"没被选中的库"分配固定候选名额（<code>supplementRatio</code>）——<b>万一意图判错了，其他库还能捞回点东西</b>，避免一判错就彻底漏召回。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">查询词映射和问题重写解决什么问题？</div>
+    <div class="a">
+      <p>一句话：<b>把"用户的话"先翻译成"机器好检索的话"</b>，发生在检索之前，是"检索质量的前置保障"。</p>
+      <ul>
+        <li><b>查询词映射</b>：把用户口语化的词映射成规范术语/同义词。比如用户说"深度学习模型那篇"，文档里写的是"神经网络"，不翻译一下关键词检索就会漏——把两边对齐，就补上了这个坑。</li>
+        <li><b>多问题重写拆分</b>：一是<b>补全指代</b>——多轮对话里用户说"那它和 B 方法比呢"，"它"指什么需要结合上文补齐；二是<b>拆分复杂问题</b>——一个大问题拆成几个子问题分别检索再合并，召回质量更高。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">意图路由的量化效果？</div>
+    <div class="a">
+      <ul>
+        <li><b>自建评测集</b>：基于真实检索日志构造 + 人工抽检标注。</li>
+        <li><b>指标</b>：意图路由 <b>Top-1 准确率 92.5%</b>——即系统打分最高的那个意图叶子节点与人工标注一致的比例，衡量"分流这一环"判得准不准。</li>
+        <li><b>面试提示</b>：Top-1 只衡量意图分类本身，不代表"最终回答准确率"，要能讲清它为什么单独列在"问题理解与意图路由"下。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 id="sharding">模块一 · 附：分库方案（功能分层为主、学科交给意图树）</h3>
+
+  <div class="qa">
+    <div class="q">知识库是怎么分库的？为什么这么分？</div>
+    <div class="a">
+      <p>场景是「以学术论文为载体的通用研发知识检索平台」。知识库有两个<b>互相独立（正交）</b>的切分维度，可以叠加用：</p>
+      <ul>
+        <li><b>按"用途/形态"切（功能维度）</b>——对应「摘要库 vs 全文 vs 引用图谱」，正是两级精读的思路；</li>
+        <li><b>按"学科领域"切（内容维度）</b>——对应意图树里的「学科 → 方向 → 子方向」层级。</li>
+      </ul>
+      <p>我的原则一句话：<b>库按功能分层来分，学科的细分交给意图树去处理。</b>为什么学科不拆成库？打个比方，<b>图书管理员不会给每本书按"图书分类号"单独建一个书库</b>——因为一本书可能同时属于多个分类（"多模态 RAG"算 CV 还是 NLP？边界模糊），而且分类多到爆炸（arXiv 有几十个类别）。更重要的是，学科怎么路由，意图树<u>已经</u>做了，再在库层面切一遍是重复劳动。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">多知识库具体怎么设计？（功能分层为主）</div>
+    <div class="a">
+      <p>我的知识库按<b>「检索方式」分层</b>，而不是按学科切。最终落地为「2 个逻辑库 + 2 个检索通道」：</p>
+      <table>
+        <tr><th>形态</th><th>名称</th><th>内容</th><th>用途</th><th>检索方式</th></tr>
+        <tr><td>逻辑库 ★核心</td><td><code>paperarxivstore</code>（学术摘要库）</td><td>标题 + 摘要 + arxiv_id + 元数据（作者/年份/类别）</td><td>第一级全局召回，定位「是哪几篇论文」</td><td>向量（Milvus）+ 关键词（ES BM25）双索引</td></tr>
+        <tr><td>逻辑库 ★扩展</td><td><code>internal_docs</code>（内部研发知识库）</td><td>公司/团队内部研发文档、技术方案、Wiki</td><td>回答「我们内部怎么做的」私有知识问题</td><td>向量 + 关键词（复用同一套引擎）</td></tr>
+        <tr><td>检索通道</td><td>引用图谱（LightRAG）</td><td>论文引用关系、方法演进关系（实体+关系图）</td><td>引用链多跳推理、脉络追踪</td><td>图谱检索（naive/local/global/hybrid/mix）</td></tr>
+        <tr><td>检索通道</td><td>联网搜索（You.com）</td><td>—（实时工具，非知识库）</td><td>时效兜底，补库里没有的最新内容</td><td>联网搜索</td></tr>
+      </table>
+      <p><b>关键认知——图谱不是「库」，是「通道」</b>：图谱的数据不在向量库里，而是存在 LightRAG 内部的图存储（Neo4j）。它靠 <code>GraphSyncingVectorStoreService</code> 在<b>文档向量入库时，自动顺带抽取实体和关系</b>，不用你手动建库灌数据。所以它和向量、关键词、联网<b>平级</b>，本质是<b>第五种"检索方式"（通道）</b>，而不是第四个存放内容的库。</p>
+      <p><b>为什么摘要库必须独立</b>：它是两级精读的<b>第一级</b>，单篇约 0.2KB、成本极低、覆盖面最广，是整个系统的<b>「入口」</b>。如果摘要和全文混在一个库里，两级精读就退化成了普通全文检索，所以它必须单独存在——这是<b>底线</b>。</p>
+      <p><b>为什么图谱独立于向量库</b>：图谱是<b>图结构数据</b>，存储和检索方式和向量、关键词完全不同，硬混在一起会让向量库"图不图、文不文"。且图谱构建成本高，独立开方便按需重建。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">分库怎么对应到意图路由？</div>
+    <div class="a">
+      <p>分好库后，意图树节点通过 <code>collection_names</code>（JSONB 数组）绑定一个或多个库，路由时按命中意图定向到对应库/通道：</p>
+      <table>
+        <tr><th>意图节点</th><th>类型</th><th>路由到</th></tr>
+        <tr><td><code>paper</code></td><td>KB 召回节点</td><td><code>paperarxivstore</code>（学术摘要库）</td></tr>
+        <tr><td><code>paper-detail</code></td><td>MCP 精读节点</td><td><code>paperarxivstore</code> 召回摘要 → MCP <code>arxiv_fetch_fulltext</code> 拉全文</td></tr>
+        <tr><td><code>paper-citation</code> / 引用链</td><td>KB 召回节点</td><td>图谱通道（LightRAG 多跳推理）</td></tr>
+        <tr><td><code>internal-tech</code></td><td>KB 召回节点</td><td><code>internal_docs</code>（内部文档库）</td></tr>
+        <tr><td>最新进展</td><td>工具节点</td><td>联网搜索（You.com）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">一个真实请求怎么在多库之间路由？</div>
+    <div class="a">
+      <p>用户问：<b>「RAG 最新技术进展，以及我们内部有没有相关的技术方案」</b></p>
+      <p>经过查询重写 + 多问题拆分，拆成两个子问题，分别定向到不同库：</p>
+      <ul>
+        <li>子问题①「RAG 最新技术进展」→ 命中 <code>paper</code> → 查 <code>paperarxivstore</code>（摘要库）+ 联网兜底补时效；</li>
+        <li>子问题②「内部有没有相关技术方案」→ 命中 <code>internal-tech</code> → 查 <code>internal_docs</code>（内部文档库）。</li>
+      </ul>
+      <p>这里「多库路由 + 定向 vs 全局」的价值真正体现出来了：<b>两个子问题分别定向到不同库</b>。单库场景下这些机制会退化成摆设，只有多库才「有真实用武之地」。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么保留「内部文档库」这个库？它和纯学术问答工具的区别在哪？</div>
+    <div class="a">
+      <ul>
+        <li>项目定位是「<b>通用研发知识检索平台</b>」，arXiv 只是「落地验证场景」，不是全部。</li>
+        <li>真正的通用性体现在能接入<b>内部私有知识</b>——这是和纯学术问答工具的本质区别，也是「平台化」思维的体现。</li>
+        <li>叙事角度：<b>同一套多路检索 + 两级精读引擎，既能查 arXiv 学术论文，也能接入企业内部研发文档、代码库、Wiki</b>——这才是「通用」二字的真义，而不是一个只能查论文的 demo。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">这套分库方案是怎么一步步演进出来的？</div>
+    <div class="a">
+      <p>一句话：<b>不是一步到位堆功能，而是"先把核心跑通，再一层层往通用方向加"。</b>总共三步：</p>
+      <ul>
+        <li><b>第一步（单库跑通核心）</b>：只做 <code>paperarxivstore</code>（摘要库）+ 联网工具，先把<b>两级精读</b>这条核心链路打通（摘要召回 + MCP 拉全文）——这是整个平台最该讲透的亮点。</li>
+        <li><b>第二步（体现平台通用性）</b>：接入 <code>internal_docs</code> 内部文档库，让「多库路由 / 定向 vs 全局」这些机制<b>真正有了用武之地</b>——否则单库下它们就是摆设。</li>
+        <li><b>第三步（补全检索维度）</b>：启用 LightRAG 引用图谱，让 <code>GraphSyncingVectorStoreService</code> 在向量入库时自动抽取实体/关系，补上「引用链 / 方法演进」这条多跳推理通道。</li>
+        <li><b>演进逻辑</b>：每一步都站在"上一步已经跑通"的基础上，往「更通用、更多检索维度」方向<b>加一层</b>，而不是一步到位堆功能。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">arXiv 的学科类别（cs.CL / cs.AI / cs.CV…）要不要也拆成库？</div>
+    <div class="a">
+      <p><b>不要。学科类别是「字段」，不是「库」。</b>它和功能分库是两个正交维度，叠加但不混用：</p>
+      <ul>
+        <li><b>为什么不能拆成 7 个库</b>：因为<b>一篇论文可以同时属于多个学科</b>（<code>categories = "cs.CL cs.AI"</code>，用空格列了好几个标签）。一旦物理拆库就会陷入"这本书该放图书馆哪个书架"的难题——放这个库就漏了另一个，放多个库就重复索引；而且 <code>cs.AI</code> / <code>cs.LG</code> / <code>stat.ML</code> 高度重叠，边界本来就模糊。</li>
+        <li><b>学科路由交给意图树</b>：意图树本来就是「学科 → 方向 → 子方向」层级，学科该去哪已经由它管了，再在库层面切一遍纯属重复。</li>
+        <li><b>正确的用法：库内字段过滤</b>——把学科类别做成<b>结构化元数据字段</b>（而不是正文里的一行文本），检索时用条件过滤收窄：<code>collection_name == "paperarxivstore" && metadata["category"] == "cs.CL"</code>。这样既保住了"一个摘要库"的两级精读，又能做到学科定向，还天然支持"一篇论文多类别"和"跨学科问题"（多模态 RAG 算 CV 还是 NLP，直接都命中）。</li>
+      </ul>
+      <p>为此我把「category 作为结构化元数据」的<b>完整链路</b>落地了，分三段：</p>
+      <ul>
+        <li><b>入库侧</b>：文档上传接口新增 <code>metadata</code> 字段（JSON），落 <code>t_knowledge_document.metadata</code> 列；分块时经 <code>DocumentRef.metadata</code> 透传，在 <code>DefaultIngestionKernel</code> 里合并进每个块的 <code>ChunkMetadata.extras</code>，最终随 <code>toMap()</code> 写进向量库 metadata。</li>
+        <li><b>脚本侧</b>：<code>batch_ingest_arxiv.py</code> 的 <code>build_metadata()</code> 从 <code>category_list</code> 提取主类别 + 完整列表，以 <code>{"category":"cs.CL","category_list":["cs.CL","cs.AI"]}</code> 作为 metadata 随文档上传。</li>
+        <li><b>检索侧</b>：<code>MilvusVectorRetrieverService</code> 把 <code>RetrieveRequest.metadataFilters</code> 拼进标量过滤表达式 <code>metadata["key"] == "value"</code>，与 collection 过滤 AND 组合，实现对 <code>category</code> 的精确等值过滤。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">一句话总结分库方案？</div>
+    <div class="a">
+      <p><b>功能分层为主（摘要库 + 内部文档库两个逻辑库，图谱与联网作为独立检索通道），学科细粒度交给意图树，联网搜索作为时效工具兜底</b>。这样既保住了两级精读的核心亮点，又让「多库路由」真正成立，还撑起了「通用研发知识检索平台」的定位。</p>
+    </div>
+  </div>
+
+  <h3>模块二 · 多路混合检索（简历句①：四通道并行召回 + RRF 融合 + Rerank）</h3>
+
+  <div class="qa">
+    <div class="q">一个子问题的完整检索流程（以「RAG 最新进展？」为例，建立整体印象）</div>
+    <div class="a">
+      <div class="flow">
+        <span class="step">1 问题理解</span> <span class="step">2 四路并行召回</span> <span class="step">3 RRF 融合(→Top50)</span> <span class="step">4 Rerank 精排(→Top10)</span> <span class="step">5 拼上下文生成</span>
+      </div>
+      <ol>
+        <li><b>问题理解</b>：先让大模型给子问题做<b>意图打分</b>，判断它该去哪个知识库、要不要调外部工具（比如命中了 <code>paper</code> 意图 → 就去查学术摘要库 <code>paperarxivstore</code>）。</li>
+        <li><b>四路并行召回</b>：同时用 4 种方式各找一批资料——<b>向量检索</b>（Milvus，按语义找相似的）、<b>关键词匹配</b>（ES BM25，按字面精确找）、<b>知识图谱</b>（LightRAG，沿关系多跳追踪）、<b>联网搜索</b>（You.com）。每路都返回自己的候选和内部排名，像 4 个"海选评委"各推荐一拨人。</li>
+        <li><b>RRF 融合（→Top50）</b>：4 路给的分数量纲完全不同（余弦 0.85 / BM25 18.6 / 图谱 3.2），没法直接相加。RRF 干脆<b>不看分数、只看"名次"</b>来合并成统一排名，再<b>截断候选池到 Top50</b>（<code>rerankCandidateLimit</code>），进入下一轮。</li>
+        <li><b>Rerank 精排（→Top10）</b>：RRF 只看名次、没真正"读懂"内容，精度不够。这里换成 <b>cross-encoder（交叉编码器）</b>，把问题和每个候选<b>拼在一起逐字比对</b>打精确分，留下最相关的 <b>Top10</b>。</li>
+        <li><b>拼上下文生成</b>：把 Top10 补上元数据、编上引用号，拼成上下文交给大模型生成答案。</li>
+      </ol>
+      <p>一句话概括这套检索漏斗：<b>「快而糙的召回（向量）→ RRF 合并名次（→50）→ 慢而准的精排（→10）」</b>，本质就是<b>「海选 → 笔试 → 面试」</b>——先广撒网捞出一大批，再用越来越精细的方式层层筛选，平衡"快"和"准"。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">四通道是如何设计并行的？</div>
+    <div class="a">
+      <p>设计思路一句话：<b>把 4 个"找资料的专员"统一封装、同时派出去，任何一个掉链子都不拖累整体。</b>具体落到代码上是三层：</p>
+      <ul>
+        <li><b>统一"接口"</b>：4 个通道都实现同一个 <code>SearchChannel</code> 接口（<code>search()</code> 检索、<code>isEnabled()</code> 是否启用等），对外都返回统一的 <code>SearchChannelResult</code>。这样上层主流程只用管一套接口，具体是向量/关键词/图谱/联网由各通道自己实现。</li>
+        <li><b>并行调度</b>：核心编排类 <code>MultiChannelRetrievalEngine</code> 先过滤掉关闭的通道，再用 <code>CompletableFuture.supplyAsync(..., ragRetrievalExecutor)</code> 把 4 路提交到<b>专用线程池</b>，<b>同时开跑</b>而不是一个接一个等。</li>
+        <li><b>失败/超时都"单路降级"</b>：每路用 <code>catch(Exception)</code> 包住，挂了就返回空结果，绝不让一路拖垮整条链；超时用 <code>future.orTimeout(timeoutMs)</code>——只<b>放弃这一路的结果</b>、但<b>不强行终止任务</b>，因为最慢的一路不该拖住其余 3 路的成果融合。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">四通道各擅长什么？举个具体问题看它们怎么互补？</div>
+    <div class="a">
+      <p>以学术论文场景为例，同一个知识库，不同问法需要不同通道兜住：</p>
+      <table>
+        <tr><th>用户问法</th><th>最优通道</th><th>为什么</th></tr>
+        <tr><td>"检索增强生成有哪些综述？"</td><td><b>向量</b></td><td>语义相近，向量检索能召回"Retrieval-Augmented Generation"相关的综述论文</td></tr>
+        <tr><td>"论文 <b>2503.10677</b> 是哪篇？"</td><td><b>关键词（ES BM25）</b></td><td>精确编号匹配，向量对"数字编号"不敏感，关键词通道精确命中</td></tr>
+        <tr><td>"谁引用了 Attention is All You Need？"</td><td><b>知识图谱</b></td><td>引用链是多跳关系，图检索沿"引用边"追踪，向量/关键词都做不到</td></tr>
+        <tr><td>"RAG 最新进展（2026）？"</td><td><b>联网搜索</b></td><td>库里没有的最新论文，联网补时效</td></tr>
+      </table>
+      <p>关键结论：<b>单靠向量一条路，上面 4 种问法至少漏掉一半</b>。这正是"多路召回 + 融合"的动机——就好比查资料不能只靠搜索引擎，还得靠图书馆目录、熟人打听、实时新闻，<b>不同通道覆盖不同问法，合并起来才不容易漏</b>。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">RRF 加权融合是怎么实现的？（关键，面试必问）</div>
+    <div class="a">
+      <p>先给直觉：4 路评委各给了一份"候选人名次表"，但打分风格完全不同。RRF 的做法是——<b>不看绝对分数，只看"名次"，名次越靠前加分越多</b>；同时给可信度高的通道更高的"话语权"（权重）。</p>
+      <ul>
+        <li><b>公式</b>：<code>score(chunk) = Σ_channel weight_channel / (k + rank_channel)</code>，rank 从 0 开始（即 <code>weight / (k + rank + 1)</code>）。k 的作用是<b>缩小名次差距的影响</b>（名次第 1 和第 2 的差别，远小于分数 100 和 90 的差别），让融合更"温和"。</li>
+        <li><b>为什么加权</b>：不同通道可信度不同。例如跑在<b>全局图</b>上的图谱通道噪声偏高，就给它<b>降权</b>，避免噪声通道靠"硬凑名次"挤进前排。</li>
+        <li>权重和 k 值都能配置（<code>fusion.channel-weights</code>、<code>fusion.rrf-k</code>），方便调优。</li>
+        <li><b>关键细节</b>：名次取自<b>不可变的原始召回顺序</b>。即使上游去重合并了 chunks，也不丢失"多路命中"信息——一个片段被越多路同时命中，说明它越相关，RRF 天然给它加分。</li>
+        <li>只有 <code>results.size() &gt; 1</code>（确实多通道）才做 RRF，单通道保持原顺序；融合后按分倒序<b>截断候选池</b>到 <code>rerankCandidateLimit</code>，只把高分的前 N 名送去 Rerank。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">后处理链（去重 → 融合 → 精排 → 富化）如何串联？</div>
+    <div class="a">
+      <p>先给直觉：4 路召回回来的是<b>"一锅乱料"</b>，还要经过"去重、合并名次、精排、补信息"这几道<b>流水线工序</b>才能变成能用的上下文。我用<b>责任链模式</b>实现——每个处理器按 <code>getOrder()</code> 从小到大依次执行，任何一环出错只 <code>log.error</code> 并跳过，<b>绝不中断整条流水线</b>：</p>
+      <table>
+        <tr><th>Order</th><th>处理器</th><th>职责</th></tr>
+        <tr><td>1</td><td><code>DeduplicationPostProcessor</code></td><td>按 <code>RetrievedChunkKey</code> 去重（<code>putIfAbsent</code> 保留首次出现）</td></tr>
+        <tr><td>5</td><td><code>FusionPostProcessor</code></td><td>RRF 加权融合 + 截断候选池</td></tr>
+        <tr><td>10</td><td><code>RerankPostProcessor</code></td><td>Rerank 精排，输出 <code>contextTopK</code> 条</td></tr>
+        <tr><td>20</td><td><code>MetadataEnrichmentPostProcessor</code></td><td>按 chunkId/docId 回表补元数据（docId/docName/chunkIndex），只富化不重排</td></tr>
+      </table>
+      <p>Rerank 阶段还做了<b>归因日志</b>：对比 Rerank 前后各通道候选数，重点观测"图谱证据存活率"，用于指导图谱通道权重调优。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么 RRF 只看排名、Rerank 要换 cross-encoder？两段式各解决什么？（高频追问）</div>
+    <div class="a">
+      <ul>
+        <li><b>RRF 为什么只看排名不看原始分数</b>：向量（余弦）、ES（BM25）、图谱、联网四通道的分数<b>量纲完全不同</b>（0.85 vs 18.6 vs 3.2），像"1 米长的绳子"和"3 公斤重的石头"根本没法直接比。而<b>排名（第 1、第 2…）天然是同一把尺子</b>，用 <code>weight/(k+rank)</code> 就能公平合并。代价是<b>只留相对顺序、丢掉原始分</b>。</li>
+        <li><b>Rerank 为什么换 cross-encoder</b>：RRF 只看"名次"，并没真正"读懂"问题和资料内容的关系，精度不够。Rerank 改用 <b>cross-encoder（交叉编码器）</b>，把 query 和 chunk <b>拼到一起逐字比对</b>再打分，能捕捉到细节，所以更准。</li>
+        <li><b>bi-encoder vs cross-encoder（用个比方）</b>：<b>bi-encoder</b> 像"看简历海选"——每个人把简历（向量）提前做好存起来，来了一个岗位（query）就按相似度排序，<b>快但只看大概</b>，适合海量筛选；<b>cross-encoder</b> 像"面对面面试"——把岗位要求和候选人资料放一起深入交流（逐字交互）再定，<b>准但慢</b>，只能面少量人。</li>
+        <li><b>两段式本质</b>：先用 bi-encoder 从百万级<b>快速捞出 50 个</b>，再用 cross-encoder <b>精排这 50 个选 Top10</b>。就是「初筛 → 面试 → 录用」的三级漏斗——<b>用"快模型粗筛 + 慢模型精读"平衡速度与精度</b>，这也是几乎所有搜索系统通用的思路。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">知识图谱通道（LightRAG）能解决什么问题？</div>
+    <div class="a">
+      <p>一句话：普通检索像"查单页"，图谱像"查关系网"。<b>普通 RAG 把文档切成一段段、各自按相似度找，天然割裂了文档之间的联系</b>，所以答不了"需要跨文档关联、多跳推理"的问题。</p>
+      <ul>
+        <li><b>它怎么解决</b>：LightRAG 先把文档<b>抽成一张知识图谱</b>（提取"实体"和"实体间的关系"），检索时不再是查片段，而是<b>沿着图上的关系跳着找</b>（多跳遍历）。</li>
+        <li><b>能干嘛</b>：项目支持 LightRAG 的<b>五种图检索模式</b>（naive/local/global/hybrid/mix），典型场景是<b>论文引用链</b>——比如"谁引用了某篇论文""A 方法 → B 改进 → C 现状"的研究脉络追踪，这正是普通检索做不到的。</li>
+        <li><b>代价（所以要降权）</b>：建图谱要先做<b>实体抽取、关系抽取</b>，成本高、步骤重，而且图谱上的噪声也可能比关键词更高，所以在 RRF 里给它<b>降权</b>、作为补充通道而不是主力。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>模块二 · 附：量化效果（简历数据怎么来的）</h3>
+  <div class="qa">
+    <div class="a">
+      <ul>
+        <li><b>自建评测集</b>：50 条研发领域评测用例，覆盖向量语义检索 / 关键词精确匹配 / 图谱引用链 / 融合多主题四类通道，基于<b>真实检索日志构造</b> + 人工抽检。</li>
+        <li><b>指标</b>：Recall@10 达 <b>88.6%</b>、MRR <b>0.72</b>，三路融合较单路向量 Recall@10 提升 <b>12.3%</b>；意图路由 Top-1 准确率 <b>92.5%</b>；流式首包 P50 <b>1.8s</b>。</li>
+        <li><b>面试提示</b>：这些数据要能讲清"怎么测出来的"——评测集如何构造、指标如何计算、对比基线是什么，比背数字更重要。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">这些指标分别是什么意思？（Recall@K / MRR / Precision@K / Top-1 / 延迟，通俗版）</div>
+    <div class="a">
+      <p>先统一一个背景：评测时，每条问题都有人工标注的<b>"正确答案"（相关文档 reference）</b>和<b>系统实际召回的结果（retrieved）</b>，所有指标都是在比"这两者对得上多少"。下面逐个讲：</p>
+      <ul>
+        <li><b>Recall@K（召回率@K）＝ 88.6%</b>：衡量"该找回来的资料找回来了多少"，越接近 1 说明<b>漏得越少</b>。公式：<code>前 K 个结果里命中的相关文档数 / 总相关文档数</code>。例：一道题相关文档有 5 篇，前 10 个结果命中 4 篇，则 Recall@10 = 4/5 = 0.8。<b>这是 RAG 检索最看重的指标</b>——第一关漏了，后面精排、生成再准也救不回来。</li>
+        <li><b>MRR（平均倒数排名）＝ 0.72</b>：不仅看"找没找到"，还看<b>第一个正确答案排得够不够靠前</b>。公式：单条 = <code>1 / 第一个相关文档的位置</code>，再对所有问题取平均。排第 2 名得 1/2=0.5，第 1 名得满分 1.0。0.72 意味着平均第一个正确论文排在 <code>1/0.72 ≈ 1.4</code> 名左右，<b>基本进前三</b>，补足了 Recall 没体现的"排序质量"。</li>
+        <li><b>Precision@K（精确率@K）</b>：衡量"召回来的结果里有多少是真正相关的"，<b>越接近 1 说明噪音越少</b>。公式：<code>前 K 个里命中的相关数 / K</code>（分母固定为 K）。例：前 10 条里只有 3 条相关，则 Precision@10 = 0.3。它与 Recall 此消彼长（Recall 高易带噪音、Precision 高易漏），所以检索用<b>"粗召回 Top50 → Rerank 精排 Top10"两级漏斗</b>来平衡。</li>
+        <li><b>Intent Top-1 准确率＝ 92.5%</b>：衡量"意图路由判断得准不准"。取系统打分<b>最高的那个意图叶子节点（Top-1）</b>，与人工标注的正确意图比对，<b>一致的占比</b>就是准确率。例：100 条问题里约 92~93 条系统"第一选择"和人工一致。它不是"最终回答准确率"，只衡量分流这一环，这也是它单独列在"问题理解与意图路由"下的原因。</li>
+        <li><b>P50 / P95 延迟＝ 首包 1.8s</b>：衡量"快不快"。把所有请求耗时<b>从小到大排序</b>：<b>P50（中位数）</b>是正中间那个，P50=1.8s 意味一半请求比它快，代表"典型体验"；<b>P95</b> 是第 95% 那个，代表"最差 5% 的下限"。<b>用 P50 而非平均值</b>是因为延迟分布有长尾，均值会被少数慢请求拉高。这里的<b>首包（TTFT）</b>特指"发出问题到收到第一个字"，流式场景下它决定用户"感觉快不快"。</li>
+      </ul>
+      <p><b>面试小结</b>：这几个指标要配合看——<b>Recall 高 + MRR 高</b>说明"召回全且排得对"（检索理想状态）；<b>Precision 低</b>说明噪音多，靠 Rerank 精排补；<b>延迟</b>与检索质量是<b>相互平衡</b>的两端（更准往往更慢），用档位 / 缓存 / 并行来折中。</p>
+    </div>
+  </div>
+
+  <h3>模块二 · 附：arXiv 两级检索（核心创新）</h3>
+
+  <div class="qa">
+    <div class="q">为什么要做"两级检索"？它解决了传统全文入库的什么问题？</div>
+    <div class="a">
+      <p>先打个比方：<b>图书馆有两套系统——一套是"目录卡片"（薄薄一张，记书名+简介+编号），一套是"借书"（按需去书库取整本原书）</b>。目录适合在海量书里快速定位"是哪本"，借书才真正读内容。两级检索就是同样的道理。</p>
+      <p>学术论文数据量大（百万级）、单篇正文很长。若把<b>每篇全文都向量化入库</b>，会带来两个麻烦：</p>
+      <ul>
+        <li><b>索引膨胀</b>：单篇全文数 KB~数十 KB，百万篇全存进去，存储和检索成本直接爆炸。</li>
+        <li><b>召回噪音</b>：正文里的公式、参考文献、附录，大多和"论文主题"关系不大，混进去反而会<b>稀释检索的相关性</b>，让结果不准。</li>
+      </ul>
+      <p>所以设计成两级——<b>第一级低成本召回（只存摘要，单篇约 0.2KB） + 第二级高精度精读（按需拉全文）</b>。这是本项目区别于普通知识库问答的<b>核心亮点</b>：</p>
+      <div class="flow">
+        <span class="step">第一级 abstract 全局召回</span>
+        <span class="step">精确定位候选论文</span>
+        <span class="step">第二级按需拉 arXiv 全文</span>
+        <span class="step">局部精读</span>
+        <span class="step">喂 LLM 生成</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">两级检索的完整闭环是怎样的？（带图）</div>
+    <div class="a">
+<pre style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-size:12px;line-height:1.6;overflow-x:auto;">
+用户提问：「这篇论文的技术实现细节是什么？」
+        │
+        ▼
+┌─────────────────────────────────────────────────┐
+│  第一级：abstract 索引 全局召回（成本低、覆盖广） │
+│  · 向量库只索引「标题 + 摘要 + arxiv_id」         │
+│    （单篇约 0.2KB，万篇规模不膨胀）               │
+│  · 全局语义召回 → 命中若干候选论文 + arxiv_id    │
+│  · 输出：精确定位到「是哪几篇论文」               │
+└───────────────────────┬─────────────────────────┘
+                        │  命中摘要（含 arxiv_id: 2507.xxxxx）
+                        ▼
+┌─────────────────────────────────────────────────┐
+│  第二级：按需实时拉取 arXiv 全文 → 局部精读       │
+│  · 从命中摘要提取 arxivId                        │
+│  · MCP 工具 arxiv_fetch_fulltext 实时拉取全文    │
+│  · 清洗公式/章节、分段精读（可 offset 续读）      │
+│  · 只精读命中论文，其余论文不动（按需、局部）      │
+└───────────────────────┬─────────────────────────┘
+                        ▼
+              LLM 生成带引用来源、技术细节充分的回答
+</pre>
+      <ul>
+        <li><b>第一级</b>：只索引摘要做全局召回，精确定位"是哪几篇论文"，索引成本低、覆盖面广。</li>
+        <li><b>第二级</b>：对命中论文按需拉取 arXiv 全文，局部精读后再喂 LLM，回答真正的技术细节（摘要里没有的实现细节）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">用一个真实案例走一遍完整闭环？</div>
+    <div class="a">
+      <p>假设用户问：<b>"帮我精读《A Survey on Knowledge-Oriented Retrieval-Augmented Generation》这篇论文的技术实现细节"</b>，系统内部是这样走的：</p>
+      <ol>
+        <li><b>意图识别</b>：Query 经 LLM 打分，命中了两个意图节点——<code>paper</code>（KB 召回节点）和 <code>paper-detail</code>（MCP 精读节点），判定为"既要检索论文、又要精读技术细节"。</li>
+        <li><b>第一级召回</b>：<code>paper</code> 节点驱动向量检索，在学术库 <code>paperarxivstore</code> 里召回摘要，Top 结果里带出该论文的元信息 <code>arxiv_id: 2503.10677</code>（标题也完全对上）。</li>
+        <li><b>两级衔接</b>：这段命中摘要（含 <code>arxiv_id</code>）作为「命中上下文」注入 MCP 工具 <code>arxiv_fetch_fulltext</code> 的参数提取，LLM 从中抽取出 <code>arxivId = "2503.10677"</code>——<b>用户全程没有手输编号</b>。</li>
+        <li><b>第二级精读</b>：MCP 工具用 <code>2503.10677</code> 实时拉取 arXiv 全文（HTML5 版，约 15 万字），清洗公式与章节结构，分段精读。</li>
+        <li><b>生成回答</b>：LLM 基于全文生成带引用的技术细节回答——这些细节是<b>摘要里根本没有的</b>（如具体方法框架、实验设置、评估指标）。</li>
+      </ol>
+      <p>这个案例里，两级检索的价值一目了然：<b>如果只做摘要问答，第 5 步的"技术实现细节"根本答不出来</b>；如果全文全部入库，23 万篇论文的存储成本又不可承受。两级检索正好各取所需。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">两级之间的衔接是怎么做的？（关键，面试必问）</div>
+    <div class="a">
+      <p>先说难点：要拉全文，工具必须有论文编号 <code>arxivId</code>，可<b>用户通常只说"那篇论文"，根本不会报编号</b>。所以衔接的关键就是——<b>让系统自己"顺藤摸瓜"把编号挖出来</b>。</p>
+      <ul>
+        <li>第一级命中的摘要里<b>自带 <code>arxiv_id</code></b>，把它作为<b>「命中上下文」</b>，注入第二级 MCP 工具的参数提取阶段。</li>
+        <li>核心方法 <code>McpParameterExtractor.extractParametersWithContext(question, tool, paramPrompt, hitContext)</code>：让 LLM 从「用户问题 + 命中摘要」<b>一起</b>提取 <code>arxivId</code>，而不是只从用户那句问话里硬找。</li>
+        <li><b>为什么必须这么做</b>：<code>arxivId</code> 是必填参数，如果不把命中上下文喂进去，LLM 提取不到编号，就会走「澄清」分支让用户手输——体验很糟、工具也调不起来。</li>
+        <li><b>踩过的坑</b>：早期在参数提取的 prompt 里写了一个具体编号当示例，结果 LLM <b>照抄示例编号</b>、而不是从命中上下文提取真实编号。修复：<b>移除示例值 + 强化"必须从命中资料实际内容提取、禁止沿用示例/编造编号"</b>的约束。</li>
+        <li><b>兜底</b>：MCP 精读节点本身也绑定了学术库 collection，即使 KB 召回节点没单独命中，也能驱动学术库召回，保证命中上下文里总能有 arxiv_id 的来源。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">两级检索 vs 传统全文入库，量化对比？</div>
+    <div class="a">
+      <table>
+        <tr><th>维度</th><th>全文全部入库（传统）</th><th>abstract 召回 + 按需拉全文（两级）</th></tr>
+        <tr><td>索引成本</td><td>高：全文向量化、存储膨胀</td><td><b>低</b>：只索引摘要（单篇约 0.2KB），万篇毫秒级召回</td></tr>
+        <tr><td>召回噪音</td><td>高：公式/参考文献混入干扰</td><td><b>低</b>：摘要聚焦核心，定位精准</td></tr>
+        <tr><td>精读深度</td><td>中：命中片段未必是关键段</td><td><b>高</b>：按需拉全文，精读具体技术细节</td></tr>
+        <tr><td>覆盖范围</td><td>受本地入库 PDF 限制</td><td><b>广</b>：摘要覆盖百万级，全文按需实时拉取</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>模块三 · 模型工程化与 Agent 编排（简历句③：多供应商客户端 + 熔断降级 + MCP/ReAct）</h3>
+
+  <div class="qa">
+    <div class="q">服务端工程化怎么落地？（Java + Spring Boot）</div>
+    <div class="a">
+      <ul>
+        <li><b>MyBatis-Plus 持久层</b>：管理知识文档、分块、意图节点、对话等元数据，内置通用 CRUD + 条件构造器 + 分页。</li>
+        <li><b>Redis 缓存</b>：意图树、意图分类结果、模型健康状态等热点数据缓存，降低重复计算；并用 <b>ZSET + Lua</b> 实现公平排队限流。</li>
+        <li><b>RocketMQ 异步入库</b>：文档入库/分块/删除这类重活丢到消息队列异步处理，配合<b>事务消息 + 幂等</b>保证不重不漏，避免阻塞检索主链路。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">多供应商模型客户端如何抽象？</div>
+    <div class="a">
+      <ul>
+        <li>抽象了 <code>ChatClient</code> / <code>EmbeddingClient</code> / <code>RerankClient</code> / <code>VlmClient</code> 统一接口，屏蔽不同供应商（OpenAI 系、通义、DeepSeek 等）的差异。</li>
+        <li><b>模型档位（tier）</b>：把模型按能力/成本分层（如基础档、增强档），不同场景（意图识别、重写、生成、摘要）选用不同档位，<b>控制成本</b>。</li>
+        <li><b>多候选路由</b>：同一档位配置多个候选模型，自动切换。</li>
+        <li>新供应商只需实现对应接口并加入候选配置，即可复用<b>首包探测、健康检查、熔断降级</b>全套机制（策略模式 + 配置驱动）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">三态熔断降级是怎么实现的？（高频追问）</div>
+    <div class="a">
+      <p><b>★ 通俗版：</b>可以把它想成一个<b>"智能接线总机 + 多个备用客服"</b>的场景。总机知道每个客服（模型）的健康状况，按下面三条规则办事：</p>
+      <ul>
+        <li><b>平时正常（CLOSED）</b>：来电话（请求）正常接转。但只要某个客服连续接二连三地出错（达到 <code>failureThreshold</code>），总机就判定"这个客服今天不行了"，把 TA <b>临时停掉</b>（OPEN），不再给它派活，免得用户一直听到"占线/出错"。</li>
+        <li><b>停掉一段时间后试探（HALF_OPEN）</b>：停了一阵（<code>openDurationMs</code> 到期）后，总机偷偷<b>只放一个电话进去试探</b>——这次能接通（成功）就恢复上岗（回 CLOSED）；还是不行就再停掉（回 OPEN）。</li>
+        <li><b>关键细节</b>：同一时刻<b>只允许一个试探电话</b>，防止故障刚恢复就涌进一堆请求把客服再次压垮（防雪崩）；试探失败会自动<b>切换到下一个备用客服</b>，用户全程几乎无感知。</li>
+      </ul>
+      <p><b>★ 专业版：</b>核心类 <code>ModelHealthStore</code> 用 <code>ConcurrentHashMap</code> 给每个模型维护健康状态，实现标准<b>断路器（Circuit Breaker）</b>三态模型：</p>
+      <ul>
+        <li><b>CLOSED（关闭）</b>：正常放行，记录连续失败次数 <code>consecutiveFailures</code>，达到 <code>failureThreshold</code> 后切换为 OPEN。</li>
+        <li><b>OPEN（打开）</b>：直接拒绝调用（快速失败），持续 <code>openDurationMs</code> 时间，避免持续打已故障的模型。</li>
+        <li><b>HALF_OPEN（半开）</b>：OPEN 超时后，只放行<b>一个探测请求</b>（探测名额 <code>halfOpenInFlight</code> + 令牌 <code>halfOpenToken</code>），成功回 CLOSED，失败再回 OPEN。</li>
+        <li><b>并发安全</b>：用 <code>ConcurrentHashMap.compute()</code> <b>原子更新</b>状态；<code>allowCall()</code> 发放许可（被熔断/探测在途返回 null 即拒绝），<code>markSuccess()/markFailure()</code> 更新健康，<code>releaseHalfOpenPermit()</code> 只释放自己令牌持有的探测名额，保证同一时刻只有一个探测请求，防"雪崩式探测"。</li>
+        <li><b>降级本质</b>：普通 RPC 熔断降级是"返回默认值"，这里<b>AI 模型熔断的降级是"切到下一个候选模型"</b>——<code>ModelSelector</code> 先把不可用模型筛出候选，<code>ModelRoutingExecutor</code> 遍历候选逐个尝试，失败即 <code>markFailure</code> 并继续下一个。</li>
+        <li>配合<b>首包探测</b>（流式场景下首包超时/空响应/异常即触发降级并切换）和<b>多候选自动切换</b>，形成完整容错链路。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">Agent 编排与"带逐句引用的文献综述"怎么实现？</div>
+    <div class="a">
+      <ul>
+        <li>通过 <b>MCP 协议</b>对接 <b>Semantic Scholar</b> 做论文搜索与引用分析（<code>search</code> / <code>citations</code> / <code>references</code>），精读全文时经其 <code>externalIds</code> 映射到 arXiv 拉取全文，并支持<b>工具发现、参数提取、Schema 校验</b>（注册表模式管理工具）。</li>
+        <li>文献综述生成是<b>多步骤编排</b>（检索 → 分组 → 引用分析 → 综合），每一步产出给下一步，最终生成<b>逐句带引用</b>的综述。</li>
+        <li><b>引用编号机制</b>（核心）：上下文格式化阶段只写入内部锚点 <code>data-ragent-doc-id</code>，来源装配完成后由 <code>CitationContextEnricher</code> 依据 <code>SourceRef.index</code> 替换为模型可见的 <code>ref</code> 编号。</li>
+        <li><b>关键设计</b>：Prompt、SSE、落库、前端<b>复用同一份来源编号</b>，同时<b>不把内部文档 ID 暴露给模型</b>（安全 + 一致性）。引用开关关闭时只抹掉内部锚点、不注入编号，但都要过这一道，防止 docId 漏进模型可见文本。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">流式首包 P50 1.8s 是怎么达到的？</div>
+    <div class="a">
+      <ul>
+        <li><b>多路并行召回</b>：四通道 <code>CompletableFuture</code> 并行，而非串行等待，显著缩短检索耗时。</li>
+        <li><b>SSE 流式输出</b>：首包即"第一个字"，决定用户"感觉快不快"，用事件回调边生成边推。</li>
+        <li><b>模型档位选择</b>：意图/重写等用低档位快模型，只把生成主链路留给高档位，平衡速度与成本。</li>
+        <li><b>缓存命中</b>：意图树、意图分类结果等热点数据走 Redis 缓存，降低重复计算。</li>
+        <li><b>P50 而非均值</b>：延迟分布有长尾，均值会被少数慢请求拉高，P50（中位数）更能代表典型用户体验。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>模块三 · 附：工程保障（并发 / 消息 / 可观测）</h3>
+
+  <div class="qa">
+    <div class="q">Redis 公平排队限流怎么实现？</div>
+    <div class="a">
+      <ul>
+        <li>用 <b>Redis ZSET</b> 做公平排队：每个请求入队时写入时间戳作为 score，按 <b>先进先出（公平）</b>原则出队。</li>
+        <li>配合 <b>Lua 脚本</b>做<b>原子抢占</b>（判断许可 + 出队一个原子操作），避免并发下超发。</li>
+        <li>用<b>过期信号量</b>（key 带 TTL）避免请求宕机导致的许可泄漏，用 <b>Pub/Sub 唤醒</b>等待队列，支持<b>进度、超时、取消与许可回收</b>。</li>
+        <li>解决的核心问题：<b>突发流量压垮模型服务</b>（模型推理慢、成本高），用排队削峰而非直接拒绝。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">RocketMQ 事务消息与幂等怎么落地？</div>
+    <div class="a">
+      <ul>
+        <li><b>事务消息</b>解决"本地事务与发消息"的一致性：异步入库时先发<b>半消息</b>，执行本地事务，再根据结果 Commit/Rollback，保证分块与删除任务<b>不重不漏</b>。</li>
+        <li><b>幂等</b>：因为 MQ 是"至少一次"投递，消费者需要幂等处理（唯一键去重、状态机判断），防止重复入库。</li>
+        <li>远程刷新文档用<b>分布式锁 + 状态机</b>控制，避免并发刷新冲突。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">全链路 Trace（@RagTraceNode + AOP）怎么实现？</div>
+    <div class="a">
+      <ul>
+        <li>自定义注解 <code>@RagTraceNode(name, type)</code> 标注关键节点（如 multi-channel-retrieval、intent-resolve），通过 <b>AOP 切面</b>在方法前后自动记录<b>耗时、输入输出、异常</b>。</li>
+        <li>一次问答形成 <b>Trace Run → 多个 Trace Node</b> 的树状结构，管理端可查看趋势、详情。</li>
+        <li><b>上下文透传</b>：用 <b>TTL（ThreadLocal 增强）</b>保证用户上下文和 Trace 上下文能在 <code>CompletableFuture</code> 跨线程池传递（因为并行检索/意图识别都会切换线程）。</li>
+        <li>价值：RAG 链路长、环节多，出问题能<b>精确定位到哪一步</b>（是召回少还是模型慢还是融合错）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">会话记忆（最近 N 轮 + 持久化摘要）怎么控制 Token 成本？</div>
+    <div class="a">
+      <ul>
+        <li><b>最近 N 轮消息</b>：只保留最近的对话轮次直接拼入 prompt，避免无限增长。</li>
+        <li><b>持久化摘要</b>：更早的历史消息用 LLM 压缩成摘要持久化保存，用摘要代替原文，<b>既保留关键上下文又省 Token</b>。</li>
+        <li>两者结合，在"上下文完整度"和"Token 成本"之间取平衡。</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================================ -->
+<div class="section" id="project-qa">
+  <h2>二、从简历出发的项目追问（模拟面试官）</h2>
+
+  <div class="tip">
+    <b>🎯 说明：</b>以下每个问题都<b>直接对应简历上的一句话</b>，面试官大概率会揪着这些点追问。括号里标注了"简历原文"和"回答要点"，训练目标是"简历每个字都能展开讲 3 分钟"。
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"四通道并行召回 + RRF 融合"，那<b>为什么要多路召回？单路向量到底哪里不行？</b></div>
+    <div class="a">
+      <ul>
+        <li>向量检索基于语义相似度，擅长"意思相近"，但<b>对精确关键词、专有名词、缩写、数字不敏感</b>，可能语义漂移或漏召回（如"ResNet-50"这类编号、或某个精确论文标题）。</li>
+        <li>关键词（BM25）擅长精确匹配但不懂语义，同义替换就召回不到。</li>
+        <li>知识图谱擅长<b>多跳关系推理</b>（引用链、方法演进）。联网搜索补时效。</li>
+        <li>四者<b>互补</b>，融合后召回率显著提升——这是实测 12.3% 提升的根因。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历说"RRF 加权融合"，<b>RRF 公式是什么？为什么用排名而不是分数融合？加权怎么定权重？</b></div>
+    <div class="a">
+      <ul>
+        <li>公式 <code>Σ 1/(k+rank)</code>，k 通常取 60。用<b>排名而非原始分数</b>，是因为不同通道分数量纲不同（向量是余弦分、BM25 是相关分，不可直接比），用排名天然归一化。</li>
+        <li>加权：不同通道可信度不同（图谱全局图噪声高），所以加 <code>weight</code> 降权，避免噪声通道抢前排。</li>
+        <li>追问可能延伸到：RRF 的缺点（只用排名、丢原始分数）→ 怎么补？答：融合后再接 Rerank（cross-encoder）精排，重新引入语义交互。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">"并行召回用 CompletableFuture"，<b>线程池参数怎么配的？为什么用 orTimeout 而不是 cancel？</b></div>
+    <div class="a">
+      <ul>
+        <li>线程池参数（corePoolSize / maximumPoolSize / keepAliveTime / workQueue / 拒绝策略），检索是 IO 密集，核心线程数按 CPU 核数 × 2 左右 + 合理队列。</li>
+        <li><b>orTimeout 不 cancel</b>：超时后只是放弃该路结果，任务继续在池里跑完。原因是 <code>orTimeout</code> 不中断底层线程，避免 cancel 引发的资源未释放和线程中断副作用；且"最慢一条"不应钳制其他通道融合。</li>
+        <li>追问：为什么不用 <code>get(timeout)</code>？因为 <code>get</code> 会阻塞主线程，而 <code>orTimeout</code> 是异步非阻塞。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"LLM 打分 + 树形结构意图识别"，<b>为什么不用关键词规则而用 LLM 打分？树形结构有什么好处？</b></div>
+    <div class="a">
+      <ul>
+        <li>规则/关键词只能覆盖显式词面，无法理解语义和隐式意图（"最近 CV 有什么新进展"没有显式提到"计算机视觉"）。LLM 打分能理解语义，Top-1 准确率 92.5%。</li>
+        <li>树形「学科→方向→子方向」层级，能做<b>由粗到细的渐进路由</b>，也便于管理和扩展（新增子方向只需加叶子节点）。</li>
+        <li>追问：LLM 打分有延迟/成本怎么办？答：意图分类用<b>低档位模型</b>（模型档位控制成本），且<b>并行</b>执行，失败降级为空意图。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"多候选路由 + 熔断降级"，<b>三态熔断和常见的 Hystrix/Resilience4j 有什么区别？为什么自己实现？</b></div>
+    <div class="a">
+      <ul>
+        <li>核心就是标准断路器三态（CLOSED/OPEN/HALF_OPEN），逻辑和 Resilience4j 一致。</li>
+        <li>自己实现的理由：① 熔断对象是<b>AI 模型</b>而非普通 RPC，降级策略是"切换候选模型"而非"返回默认值"；② 需要和<b>首包探测</b>、<b>模型档位</b>深度耦合，通用库不够贴合；③ 用 <code>ConcurrentHashMap.compute</code> 原子更新，轻量无外部依赖。</li>
+        <li>追问：半开状态为什么只放一个探测请求？答：防止故障恢复瞬间被大量请求"雪崩式"打崩，用 <code>halfOpenInFlight</code> 令牌保证同一时刻只有一个探测。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"最近 N 轮消息 + 持久化摘要控制 Token 成本"，<b>为什么不全量保留？摘要会不会丢关键信息？</b></div>
+    <div class="a">
+      <ul>
+        <li>全量保留会导致 prompt 无限膨胀，Token 成本线性增长且可能超模型上下文窗口。</li>
+        <li>折中：近期消息保留原文（细节全），远期历史压缩成摘要（保留关键结论）。</li>
+        <li>摘要确实可能丢细节，所以是<b>权衡</b>——也可以说这是"最近 N 轮 + 摘要"而非"纯摘要"，近期细节不丢。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"自建 50 条评测集，Recall@10 88.6%"，<b>评测集怎么构建的？Recall@10、MRR 怎么算？怎么保证评测可信？</b></div>
+    <div class="a">
+      <ul>
+        <li>基于<b>真实检索日志构造</b>（真实用户查询），再<b>人工抽检</b>标注相关文档，避免纯合成数据的偏差。</li>
+        <li>Recall@10 = 前 10 个结果命中相关文档的比例；MRR = 相关文档出现位置倒数的平均（1/rank）。</li>
+        <li>可信度：真实日志 + 人工标注 + 固定基线对比（单路 vs 三路融合），能复现 12.3% 的提升。</li>
+        <li>追问：为什么用 Recall 而不是 Precision？答：RAG 检索阶段更看重"别漏掉相关文档"（召回优先），精排阶段再保证准确。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"流式首包 P50 1.8s"，<b>首包延迟怎么优化？P50 为什么比平均值更有意义？</b></div>
+    <div class="a">
+      <ul>
+        <li>优化手段：多路并行召回（而不是串行）、SSE 流式输出、模型档位选择、缓存命中。</li>
+        <li>P50（中位数）比均值更能反映"典型用户体验"，因为延迟分布通常有长尾，平均值会被少数慢请求拉高。</li>
+        <li>追问可能延伸到 P95/P99，以及首包（TTFT）和总时延的区别——首包决定"感觉快不快"，流式下用户更敏感首包。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"MCP 对接 Semantic Scholar，ReAct 编排生成文献综述"，<b>MCP 是什么？和普通 function calling 有什么区别？ReAct 是什么？</b></div>
+    <div class="a">
+      <ul>
+        <li><b>MCP（Model Context Protocol）</b>：模型上下文协议，标准化"模型调用外部工具"的接口，类似 AI 界的"USB 接口"。核心是<b>工具发现 + 统一调用 + Schema 校验</b>，工具可远程部署、动态发现，而传统 function calling 是应用内硬编码函数。</li>
+        <li><b>ReAct（Reasoning + Acting）</b>：让模型交替进行"推理（Thought）→ 行动（Action）→ 观察（Observation）"，用工具结果修正推理，适合多步任务（如文献综述的检索→分组→引用分析→综合）。</li>
+        <li><b>口径统一（以简历为准）</b>：<b>简历口径 = MCP 对接 Semantic Scholar 做论文搜索与引用分析，精读全文时通过它映射到 arXiv 拉全文</b>。面试统一按此说法讲，不再提 arXiv 直连 / You.com。技术衔接点：Semantic Scholar 的 <code>externalIds</code> 字段能返回 <code>arxiv_id</code>，据此映射到 arXiv 拉全文，正好和「两级精读」闭环接上。若被追问 Semantic Scholar API，答：官方 Graph API（<code>api.semanticscholar.org/graph/v1</code>），搜索用 <code>paper/search</code>，引用用 <code>citations</code>/<code>references</code>，需带 API key。</li>
+        <li>追问：MCP 和 function calling 选型？答：MCP 解耦了工具实现和模型，工具可以跨模型复用、远程部署，工程上更灵活。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"Redis ZSET + Lua 公平排队限流"，<b>为什么要公平排队而不是令牌桶？Lua 脚本解决什么问题？</b></div>
+    <div class="a">
+      <ul>
+        <li>令牌桶/漏桶是"限速"，但突发时要么拒绝要么丢弃；公平排队是<b>削峰填谷</b>——模型推理慢，与其拒绝不如排队等待，保证公平（先进先出）不饥饿。</li>
+        <li>Lua 脚本：判断许可 + 出队是一个<b>复合操作</b>，若拆成多次 Redis 命令会有并发竞态（超发），Lua 脚本在 Redis 内<b>原子执行</b>，保证线程安全。</li>
+        <li>追问：为什么用 ZSET？答：ZSET 以时间戳为 score，天然支持按时间排序（公平队列），且支持超时清理。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历写"两级精读（仅索引摘要，单篇约 0.2KB）"，<b>为什么不把全文入库？两级精读解决什么问题？两级之间怎么衔接？</b></div>
+    <div class="a">
+      <ul>
+        <li><b>为什么不全量入库</b>：论文全文数 KB~数十 KB，百万篇全文向量化会导致<b>索引膨胀</b>（存储/检索成本爆炸）+ <b>召回噪音</b>（公式、参考文献、附录稀释主题相关性）。只索引摘要，单篇约 0.2KB，成本低、定位准。</li>
+        <li><b>两级设计</b>：第一级摘要全局召回定位「是哪几篇论文」→ 第二级按需调 <code>arxiv_fetch_fulltext</code> 拉全文精读「具体技术细节」。本质是把「索引成本」和「精读精度」解耦，像图书馆「书目检索 + 借阅原书」。</li>
+        <li><b>两级衔接（必问）</b>：第一级召回摘要里带 <code>arxiv_id</code>，作为「命中上下文」注入第二级 MCP 工具的参数提取，让 LLM 自动抽出 <code>arxivId</code>——用户全程不用手输编号。</li>
+        <li><b>踩坑</b>：参数提取 prompt 里写了具体编号示例，LLM 会照抄示例而不从命中上下文提取真实编号，修复是移除示例值 + 强化「必须从命中资料实际提取、禁止编造」。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q p">简历说"通用研发知识检索平台"，<b>知识库是怎么分库的？为什么按功能分层而不是按学科切？多库之间怎么路由？</b></div>
+    <div class="a">
+      <ul>
+        <li><b>分库原则</b>：按「检索方式/数据形态」分，不按学科分。落地为两个逻辑库——学术摘要库 <code>paperarxivstore</code> + 内部文档库 <code>internal_docs</code>（共享物理向量库，靠 <code>collection_name</code> 区分），图谱和联网是独立检索通道。</li>
+        <li><b>为什么功能分层为主</b>：学科切分有边界模糊（"多模态 RAG"算 CV 还是 NLP？）、数量爆炸（arXiv 几十类）的问题，且学科路由意图树已经做了，库级再切是重复。</li>
+        <li><b>学科怎么处理</b>：学科类别做成<b>结构化元数据字段</b>（<code>category</code>），检索时标量过滤（<code>metadata["category"] == "cs.CL"</code>），而不是拆库。</li>
+        <li><b>多库路由</b>：意图树节点通过 <code>collection_names</code> 绑定库，命中 <code>paper</code> 走学术库、命中 <code>internal-tech</code> 走内部库；多个子问题分别定向，才体现「定向 vs 全局」的价值。</li>
+        <li><b>平台化叙事</b>：同一套多路检索 + 两级精读引擎，既能查 arXiv 论文，也能接企业私有文档，这才是「通用」二字的真义，不是只能查论文的 demo。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<div class="section" id="bagu">
+  <h2>三、对应八股专题</h2>
+
+  <div class="tip">
+    <b>📚 说明：</b>以下是项目背后必考的八股，按"RAG / 后端 / 数据库"三大块组织。这些是基础，面试官可能从项目细节自然过渡到这些基础问题。
+  </div>
+
+  <h3>3.1 RAG 与检索</h3>
+
+  <div class="qa">
+    <div class="q">RAG 是什么？为什么需要？和微调的区别？</div>
+    <div class="a">
+      <ul>
+        <li>RAG：生成前先从外部知识库<b>检索</b>相关内容拼进 prompt 再生成，得到更准确、可溯源、能跟上最新知识的回答。</li>
+        <li>为什么：LLM 知识有截止、会幻觉、无法访问私有数据；RAG 用外部知识弥补且<b>能给出引用来源</b>。</li>
+        <li>对比微调：RAG 灵活、实时更新、可溯源；微调把知识写进参数，适合固化风格/能力，两者可结合。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">向量检索原理？Embedding 是什么？Milvus 常用索引？</div>
+    <div class="a">
+      <ul>
+        <li>Embedding：文本映射成高维稠密向量，语义相近距离近（余弦/内积）。</li>
+        <li>向量检索：query 也嵌入成向量，在库里找最近邻（ANN，高维精确搜索太慢）。</li>
+        <li>索引：<b>HNSW</b>（图，查询快召回高，内存大）、<b>IVF</b>（聚类倒排，省内存召回略低）、<b>PQ</b>（乘积量化压缩，省内存有损）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么选 Milvus 做向量库？它解决了什么问题？</div>
+    <div class="a">
+      <ul>
+        <li><b>Milvus 是什么</b>：专用向量数据库，分布式、支持<b>亿级</b>向量、索引类型丰富（HNSW/IVF/PQ/量化），标量过滤与向量检索原生融合（<code>metadata["key"] == "value"</code>）。</li>
+        <li><b>选它的理由</b>：落地场景是 arXiv <b>170 万+</b> 论文，数据规模逼近百万级且持续增长，需要<b>亿级扩展能力 + 原生标量过滤 + 独立伸缩</b>，匹配「通用研发知识检索平台」的长期定位。</li>
+        <li><b>标量过滤的价值</b>：多知识库靠 <code>collection_name</code> 区分、学科靠 <code>metadata["category"]</code> 过滤，Milvus 的标量过滤和向量检索能在<b>一次查询里 AND 组合</b>，避免"先查向量再回表过滤"的二次往返。</li>
+        <li><b>接口抽象</b>：检索接口（<code>VectorStoreService</code> / <code>VectorRetrieverService</code>）已抽象，向量库只作为可替换的实现——这正是「业务编排 / AI 供应商差异 / 基础设施」分层隔离的价值体现。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">多知识库路由是怎么做的？元数据标量过滤是什么？</div>
+    <div class="a">
+      <ul>
+        <li><b>多库的物理实现</b>：多个逻辑库共享同一个物理向量表，靠 <code>collection_name</code> 标量字段区分，检索时 <code>WHERE collection_name IN (...)</code> 过滤。</li>
+        <li><b>路由</b>：意图树节点通过 <code>collection_names</code>（JSONB 数组）绑定目标库，命中意图后定向到对应库；高置信度走定向检索，否则全局检索 + 补充路兜底。</li>
+        <li><b>元数据标量过滤</b>：文档入库时把 <code>category</code> 等属性作为 metadata 写进向量行，检索时 <code>metadata-&gt;&gt;'category' = 'cs.CL'</code> 做<b>等值过滤</b>，与向量相似度、collection 过滤 AND 组合。</li>
+        <li><b>为什么学科用字段不用库</b>：一篇论文多标签、跨学科，物理拆库会有归属难题；字段过滤天然支持多标签与跨学科，且和意图树的学科路由不重复。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">BM25 原理？为什么关键词检索仍必要？</div>
+    <div class="a">
+      <ul>
+        <li>BM25 是 TF-IDF 改进版，考虑<b>词频 TF、逆文档频率 IDF、文档长度归一化</b>。</li>
+        <li>TF 有饱和（非线性增长），IDF 惩罚常见词，长度归一化防长文档占便宜。</li>
+        <li>对<b>专有名词、编号、缩写、精确术语</b>这类向量模型可能没见过的词，关键词更可靠。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">GraphRAG / LightRAG 和普通 RAG 的区别？</div>
+    <div class="a">
+      <ul>
+        <li>普通 RAG 切块后按相似度检索，<b>割裂文档间关系</b>，无法多跳推理。</li>
+        <li>GraphRAG 先抽<b>实体+关系</b>成图谱，检索时利用图结构<b>多跳遍历</b>，能答"实体 A 和 C 什么关系"。</li>
+        <li>代价：图谱构建（抽取）成本高。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">Rerank 是什么？bi-encoder 和 cross-encoder 区别？</div>
+    <div class="a">
+      <ul>
+        <li>Rerank：对召回候选（如 Top100）精细排序，选出真正最相关的 Top 几条给 LLM。</li>
+        <li><b>bi-encoder（双塔）</b>：query 和文档独立编码再算相似度，快（可预存）、但无交互、精度低，适合<b>召回</b>。</li>
+        <li><b>cross-encoder（交叉）</b>：query+文档拼一起充分交互再打分，精度高但慢、无法预存，适合<b>精排</b>。</li>
+        <li>经典架构：bi-encoder 快速召回海量候选，cross-encoder 精排少量候选。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">分块（chunking）策略？Recall@K、MRR、NDCG 含义？</div>
+    <div class="a">
+      <ul>
+        <li>分块：固定长度、按段落/标题结构化、<b>语义分块</b>（按语义边界）、父子块。太大信息稀释、太小上下文割裂。</li>
+        <li><b>Recall@K</b>：前 K 命中相关文档比例（"该找的找回来没"）。</li>
+        <li><b>MRR</b>：相关文档位置倒数的平均（"第一个对的排多靠前"）。</li>
+        <li><b>NDCG</b>：考虑位置权重 + 相关度分级的排序质量。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">两级检索（摘要召回 + 全文精读）的八股：为什么要这么设计？</div>
+    <div class="a">
+      <ul>
+        <li><b>本质</b>：在「索引成本」和「精读精度」之间解耦。第一级只索引轻量摘要（标题+摘要+arxiv_id），成本极低、覆盖面广；第二级按需拉全文，精度高、按需付费。</li>
+        <li><b>对比全文入库</b>：全文入库 = 索引膨胀 + 召回噪音（公式/参考文献稀释相关性）；两级检索 = 摘要定位 + 全文精读，各取所长。</li>
+        <li><b>类比</b>：像图书馆的「书目检索 + 借阅原书」——先查目录定位是哪本书，再借出来精读，而不是把所有书的正文都复印一份堆在检索区。</li>
+        <li><b>适用边界</b>：适合「文档大、数量多、正文不适合整段入库」的场景（论文、专利、法典）；不适用于「短文本、需要全文逐字匹配」的场景。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">两级之间的衔接（召回结果 → 工具参数）怎么做？踩过什么坑？</div>
+    <div class="a">
+      <ul>
+        <li><b>做法</b>：第一级召回摘要含 <code>arxiv_id</code>，作为「命中上下文」注入第二级 MCP 工具的参数提取，让 LLM 自动提取 <code>arxivId</code>，而非要求用户手输。</li>
+        <li><b>为什么必须</b>：用户只问"某论文细节"，不给编号；而 <code>arxivId</code> 是必填，不注入上下文就会走「澄清」、工具调不起来。</li>
+        <li><b>坑</b>：参数提取 prompt 里写具体编号示例，LLM 会<b>照抄示例</b>而非从命中上下文提取真实编号——解法是移除示例值 + 强化"必须从命中资料实际提取、禁止编造"。</li>
+        <li><b>兜底</b>：精读节点也绑定学术库 collection，即使 KB 召回节点未单独命中，也能驱动学术库召回，保证命中上下文有 arxiv_id 来源。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">MCP（Model Context Protocol）是什么？和 function calling 的区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>MCP</b>：模型上下文协议，标准化「模型调用外部工具」的接口（工具发现 + 统一调用 + Schema 校验），类似 AI 界的 "USB 接口"。</li>
+        <li><b>核心区别</b>：MCP 工具可<b>远程部署、动态发现、跨模型复用</b>（如 Semantic Scholar 数据源部署在独立 mcp-server，任意 Agent 都能连），而传统 function calling 是应用内硬编码函数。</li>
+        <li><b>项目里的落地</b>：<code>mcp-server</code> 独立服务封装 <b>Semantic Scholar 搜索与引用分析</b>工具，bootstrap 通过 <code>McpClientAutoConfiguration</code> 连 9099 端口自动注册；精读全文时经 <code>externalIds</code> 映射到 arXiv 拉取，意图路由到 <code>paper-detail</code> 节点时触发调用。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">意图分类器的 examples 怎么设计？踩过什么坑？（真实案例）</div>
+    <div class="a">
+      <ul>
+        <li><b>原理</b>：意图节点用 <code>examples</code>（示例问题列表）做向量化匹配，LLM 对用户问题打分，超过阈值（如 0.35）才命中该节点。</li>
+        <li><b>真实翻车案例</b>：用户问「详细介绍下这篇论文：GraphRAG 与上下文优化」，结果只命中了 <code>paper</code>（KB 召回节点），<code>paper-detail</code>（MCP 精读节点）没被触发，最后走澄清分支让用户手输 arXiv 编号。</li>
+        <li><b>根因</b>：<code>paper-detail</code> 的 examples 只有「技术方案怎么实现」「模型结构」「算法流程」这类<b>专业表述</b>，没有「详细介绍」「详细讲」「深入讲」这类<b>用户口语化表达</b>——分类器识别不出"详细介绍"也是精读意图。</li>
+        <li><b>修复</b>：把 examples 从 8 条扩展到 14 条，补充「详细介绍下这篇论文」「详细讲一下」「深入讲讲」「展开讲讲」「帮我看看全文」等泛化表达，覆盖用户真实问法。</li>
+        <li><b>经验教训</b>：意图 examples 必须覆盖<b>用户真实的口语表达</b>，而不是只写"标准术语"。同一个意图（精读）可以有多种问法，examples 越贴近真实用户、鲁棒性越强。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.2 Java 后端与工程化</h3>
+
+  <div class="qa">
+    <div class="q">Spring 的 IoC 和 AOP 是什么？AOP 代理方式？</div>
+    <div class="a">
+      <ul>
+        <li><b>IoC</b>：对象创建和依赖注入交给容器管理，通过 <code>@Autowired</code>/构造器注入降低耦合，核心是 Bean 容器。</li>
+        <li><b>AOP</b>：把横切关注点（日志、事务、埋点）从业务抽出，通过代理在方法前后织入。项目用 <code>@RagTraceNode + AOP</code> 做全链路 Trace。</li>
+        <li>代理：<b>JDK 动态代理</b>（基于接口）、<b>CGLIB</b>（基于子类继承）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">CompletableFuture 原理？线程池 7 参数？拒绝策略？</div>
+    <div class="a">
+      <ul>
+        <li>CompletableFuture：Java 8 异步编排工具，支持 <code>thenCombine/allOf/anyOf</code> 组合和回调。</li>
+        <li>线程池 7 参数：corePoolSize、maximumPoolSize、keepAliveTime、unit、workQueue、threadFactory、RejectedExecutionHandler。</li>
+        <li>拒绝策略：AbortPolicy（抛异常）、CallerRunsPolicy（调用者执行）、DiscardPolicy（丢弃）、DiscardOldestPolicy（丢弃最旧）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">RocketMQ 如何保证消息可靠？事务消息和幂等？</div>
+    <div class="a">
+      <ul>
+        <li>可靠性三环节：生产端（同步+确认+重试）、Broker 端（持久化+主从）、消费端（手动 ACK+失败重试）。</li>
+        <li><b>事务消息</b>：先发半消息→执行本地事务→Commit/Rollback，半消息消费者不可见，解决本地事务与发消息一致性问题。</li>
+        <li><b>幂等</b>：至少一次投递会重复，需唯一键去重/状态机判断。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">MyBatis-Plus 和 MyBatis 区别？</div>
+    <div class="a">
+      <ul>
+        <li>MyBatis：半自动 ORM，手写 SQL，灵活但样板多。</li>
+        <li>MyBatis-Plus：增强版，内置通用 CRUD（BaseMapper）、条件构造器（Wrapper）、分页、逻辑删除，同时保留手写 SQL。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.3 数据库（MySQL / Redis）</h3>
+
+  <div class="qa">
+    <div class="q">MySQL 为什么用 B+ 树？最左前缀、覆盖索引、索引失效？</div>
+    <div class="a">
+      <ul>
+        <li>B+ 树<b>矮胖</b>（多叉、层少）减少 IO；<b>叶子有序链表</b>范围查询快。对比 B 树：非叶子不存数据、查询稳定；对比哈希：只能等值查询。</li>
+        <li>最左前缀：联合索引 (a,b,c) 只有从 a 开始才命中（a、a+b、a+b+c）。</li>
+        <li>覆盖索引：查询列全在索引里，<b>不回表</b>。</li>
+        <li>失效：对索引列做函数/运算、隐式类型转换、<code>like '%xx'</code>、or 连接非索引列、不满足最左前缀。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">ACID、四种隔离级别、MVCC 原理？</div>
+    <div class="a">
+      <ul>
+        <li>ACID：原子性、一致性、隔离性、持久性。</li>
+        <li>隔离级别：读未提交（脏读）、读已提交（不可重复读）、可重复读（幻读，InnoDB 用 Next-Key Lock 基本解决）、串行化。</li>
+        <li><b>MVCC</b>：undo log 版本链 + Read View，每行有事务 ID 和回滚指针，读写不阻塞，实现快照读。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">行锁、表锁、间隙锁、Next-Key Lock 区别？</div>
+    <div class="a">
+      <ul>
+        <li>行锁：锁单行，并发高。表锁：锁整表，并发低。</li>
+        <li>间隙锁（Gap）：锁索引记录间空隙，防幻读插入。</li>
+        <li><b>Next-Key Lock</b>：行锁 + 间隙锁组合，InnoDB 可重复读下默认加锁方式。</li>
+        <li>乐观锁（版本号/CAS）vs 悲观锁（直接加锁）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">redo log、binlog、undo log 区别？两阶段提交？</div>
+    <div class="a">
+      <ul>
+        <li>redo log：InnoDB 层，物理修改，崩溃恢复（持久性），WAL。</li>
+        <li>binlog：Server 层，逻辑操作，主从复制、数据恢复。</li>
+        <li>undo log：旧值，事务回滚 + MVCC。</li>
+        <li>两阶段提交（2PC）：保证 redo 和 binlog 一致——先 redo prepare，再写 binlog，最后 redo commit。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">Redis 五种数据类型底层结构？</div>
+    <div class="a">
+      <ul>
+        <li>String：SDS。List：quicklist（ziplist+双向链表）。Hash：ziplist/hashtable。Set：intset/hashtable。</li>
+        <li>ZSet：ziplist 或 <b>skiplist + dict</b>，跳表支持范围查询和排名 O(logN)。限流用 ZSET 做公平队列。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">缓存穿透、击穿、雪崩的区别和解决？</div>
+    <div class="a">
+      <ul>
+        <li><b>穿透</b>：查不存在的数据。解决：缓存空值、布隆过滤器、参数校验。</li>
+        <li><b>击穿</b>：热点 key 过期瞬间大量打到 DB。解决：互斥锁/分布式锁、热点 key 永不过期、续期。</li>
+        <li><b>雪崩</b>：大量 key 同时过期或 Redis 宕机。解决：过期时间加随机、多级缓存、限流降级、高可用。</li>
+        <li>口诀：穿透→布隆/空值；击穿→锁；雪崩→随机过期+高可用。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">Redis 持久化 RDB vs AOF？过期删除和淘汰策略？</div>
+    <div class="a">
+      <ul>
+        <li>RDB：定时快照，文件小恢复快，可能丢最后快照后数据。</li>
+        <li>AOF：追加写命令，更安全（可每秒 fsync），文件大恢复慢，可混合。</li>
+        <li>过期删除：惰性删除（访问时查）+ 定期删除（定时抽检）。</li>
+        <li>淘汰：noeviction、allkeys-lru/lfu、volatile-lru/lfu、random、volatile-ttl。</li>
+        <li>分布式锁：<code>SET key value NX PX</code>，注意锁续期（看门狗）和误删（唯一 value + Lua 释放）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">设计模式在项目里的应用？（加分项）</div>
+    <div class="a">
+      <table>
+        <tr><th>模式</th><th>场景</th></tr>
+        <tr><td>策略</td><td>检索通道、结果后处理、文档来源</td></tr>
+        <tr><td>工厂</td><td>意图树、分块策略、流式回调创建</td></tr>
+        <tr><td>模板方法</td><td>并行检索、模型请求</td></tr>
+        <tr><td>注册表</td><td>MCP 工具发现、意图节点管理</td></tr>
+        <tr><td>装饰器</td><td>向量写入时同步关键词和图谱索引</td></tr>
+        <tr><td>责任链</td><td>检索后处理、模型故障降级</td></tr>
+        <tr><td>事件回调</td><td>模型流式响应、首包探测、SSE 输出</td></tr>
+        <tr><td>AOP</td><td>链路追踪、幂等、审计日志</td></tr>
+      </table>
+      <p>每个模式都对应一个具体工程问题，不是为了用而用——这是面试时能体现"工程化思维"的点。</p>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var isP = q.classList.contains('p');
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">' + (isP ? 'P' : 'Q') + '</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'ragent-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>

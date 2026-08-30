@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八股背诵 · Agent 工程</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --teal: #0f766e; --teal-bg: #14b8a6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--teal); border-left: 4px solid var(--teal-bg); padding-left: 10px; margin-bottom: 16px; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #99d6cd; box-shadow: 0 2px 8px rgba(15,118,110,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #eef7f5; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--teal-bg); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #e6f1ef; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: #0f766e; }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: #14b8a6; background: #fff; box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #99d6cd; background: #fff; color: #0f766e; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #0f766e; color: #fff; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #eef7f5; color: #0f766e; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#0f766e; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+<header>
+  <h1>技术类别二 · Agent 工程</h1>
+  <p>对应简历：CodeForge、检索平台的 Agent 编排、LangChain/LangGraph/MCP</p>
+  <span class="badge">ReAct</span><span class="badge">多智能体</span><span class="badge">上下文管理</span><span class="badge">MCP / Function Calling</span>
+</header>
+
+<div class="tip"><b>说明：</b>本文件按技术类别横切总结 Agent 工程通用八股，覆盖 CodeForge 与检索平台共用的 Agent 知识。点击问题可折叠/展开答案。</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="section">
+  <h2>一、Agent 基础与编排</h2>
+  <div class="qa">
+    <div class="q">Agent 是什么？三要素？</div>
+    <div class="a">
+      <ul><li>让 LLM 具备"感知 → 规划 → 行动"，能调工具、观察结果、再决策的自主循环。</li>
+      <li>三要素：<b>模型（大脑）+ 工具（手）+ 记忆（上下文）</b>。</li></ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">ReAct 范式？为什么适合 Agent？</div>
+    <div class="a">
+      <ul><li>Reasoning + Acting 交替：Thought → Action → Observation 循环，直到结论。</li>
+      <li>结合纯 CoT（只推理）和纯 Act（只行动），能边想边做、根据反馈修正，适合查资料/执行代码/多步操作。</li></ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">多智能体协作 vs 单主 Agent？怎么选？</div>
+    <div class="a">
+      <ul>
+        <li><b>多智能体</b>：职责清晰、可并行，但跨 Agent 上下文丢失、重复探索、token 叠加。</li>
+        <li><b>单主 Agent</b>：自持完整上下文，子代理降级为工具，消除传递损耗、避免重复。</li>
+        <li>选择依据：任务是否强依赖共享上下文、是否可天然并行。你的 CodeForge 从多级委托改单主 Agent，端到端时长 -38%。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">Function Calling 原理？模型怎么"调工具"？</div>
+    <div class="a">
+      <ul><li>工具描述成 JSON Schema 传给模型，模型输出结构化调用指令。</li>
+      <li>程序解析 → 执行真实函数 → 结果拼回上下文 → 模型继续。</li>
+      <li>模型本身不执行代码，只请求调用，由外部执行（安全边界）。</li></ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">Python 和 Java 在 Agent 开发中各自的优势？</div>
+    <div class="a">
+      <ul>
+        <li><b>Python</b>：AI 生态第一语言，LangChain/LangGraph/PyTorch/向量库都原生支持；动态类型、胶水代码少，做 prompt 编排、工具接入、快速原型迭代最快。</li>
+        <li><b>Java</b>：强类型 + 成熟并发（线程池/CompletableFuture）+ 稳定企业级框架（Spring Boot），适合承载 Agent 背后的<b>高并发服务、多路召回并行、消息队列、事务</b>等生产级工程底座。</li>
+        <li>常见分工：<b>Python 写 Agent 核心编排与推理，Java 做后端服务/检索/存储</b>，通过 HTTP/SSE 或 MCP 对接——你的检索平台正是 Java 后端 + 多路召回并行，与 Agent 层解耦。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>二、上下文管理与记忆</h2>
+  <div class="qa">
+    <div class="q">三级上下文压缩？</div>
+    <div class="a">
+      <ul>
+        <li>① 历史消息裁剪（含工具调用配对修复）；② 工具结果零成本摘要；③ 长会话阈值触发 LLM 摘要降维。</li>
+        <li>配合统一 token 预算 + 状态机恢复保障断流续跑。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">为什么上下文管理重要？Lost in the Middle？</div>
+    <div class="a">
+      <ul>
+        <li>成本（token 越多越贵越慢）、质量（长文本中段信息利用差，即 Lost in the Middle）、稳定性（超窗截断导致失败）。</li>
+        <li>目标：信息不丢前提下压缩上下文，平衡三者。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">短期 vs 长期记忆？</div>
+    <div class="a">
+      <ul>
+        <li>短期：当前窗口内历史，直接拼 prompt，受窗口限制。</li>
+        <li>长期：跨会话持久化，用向量库检索、摘要记忆、知识库实现。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">什么是三层记忆？Agent 中如何实现？</div>
+    <div class="a">
+      <ul>
+        <li><b>工作记忆（Working）</b>：当前任务窗口内的临时状态、中间步骤、工具结果。实现：上下文消息列表 + 状态机（如 LangGraph State），受窗口/token 预算限制。</li>
+        <li><b>情景记忆（Episodic）</b>：跨会话的"发生过什么事"，如用户偏好、历史交互。实现：向量库按语义检索相关经历 + 结构化存储（用户画像、会话摘要）。</li>
+        <li><b>语义记忆（Semantic）</b>：稳定的知识/事实/规则，长期不变。实现：RAG 知识库、知识图谱、系统 prompt 里的固定规则。</li>
+        <li>落地要点：工作记忆靠<b>上下文压缩</b>控预算；情景/语义靠<b>检索</b>按需注入，避免全量塞进 prompt。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>三、协议与框架</h2>
+  <div class="qa">
+    <div class="q">SSE 是什么？为什么流式用 SSE？</div>
+    <div class="a">
+      <ul>
+        <li>基于 HTTP 的单向服务器推送。LLM 逐 token 生成，SSE 边生成边推、体验好。</li>
+        <li>vs WebSocket：WS 双向全双工，LLM 流式主要是单向，SSE 更轻量、基于 HTTP。</li>
+        <li>vs 轮询：轮询反复请求、延迟高；SSE 服务端主动推、实时。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">MCP 协议？和 Function Calling 区别？</div>
+    <div class="a">
+      <ul>
+        <li>MCP：标准化"模型 ↔ 工具"的连接协议，像 USB-C 统一外设，解决工具对接碎片化。</li>
+        <li>Function Calling 是模型厂商内部机制；MCP 是跨模型跨工具的通用标准，一个 Server 多客户端复用。</li>
+        <li>角色：Host（宿主）、Client（发起连接）、Server（提供工具/资源）。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">LangChain 是什么？LangGraph 是什么？区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>LangChain</b>：搭建 LLM 应用的组件框架，把 Prompt 模板、模型、工具、记忆、检索器封装成可复用组件，用 Chain/LCEL 串成流水线。适合<b>线性、单向</b>的简单流程（问答、总结、单次 RAG）。局限：Chain 本质是有向无环，难表达循环/回退。</li>
+        <li><b>LangGraph</b>：建立在 LangChain 之上的<b>有状态、有循环</b>的图编排引擎。核心是 <b>State（共享状态）</b> + <b>Node（节点）</b> + <b>Edge（边，含条件边）</b>，支持循环/分支/回退/并行，配合 Checkpoint 断点续跑、人工介入。适合复杂多步 Agent、多智能体。</li>
+        <li><b>StateGraph</b>：LangGraph 里共享状态贯穿节点的工作流图，表达多步、可回退、可循环。</li>
+        <li><b>一句话</b>：LangChain 是"流水线"（直线拼装），LangGraph 是"流程图 + 状态机"（可绕圈、回头、分岔）。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">通俗版：怎么理解 LangChain 和 LangGraph？</div>
+    <div class="a">
+      <ul>
+        <li><b>LangChain = 乐高积木</b>：一盒现成零件（提示词、模型、工具、记忆），你只需把它们<b>按顺序拼成一条直线</b>，像流水线 `问题→查资料→喂模型→出答案`。</li>
+        <li><b>LangGraph = 地图导航</b>：不再是直线，而是一张能<b>来回走、绕圈、分岔</b>的路线图——走到路口按结果决定去向，走错了原路返回，还能同时走几条路、走到一半存档下次继续。</li>
+        <li><b>类比</b>：LangChain = "照着菜谱一步步做菜"；LangGraph = "边做边尝，咸了加水、淡了加盐，直到满意"。</li>
+        <li><b>怎么选</b>：简单一步到位的任务用 LangChain；"边做边想、错了重来"的复杂 Agent（如 ReAct 循环）用 LangGraph。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>四、提示词 / 上下文 / Harness 工程</h2>
+  <div class="qa">
+    <div class="q">提示词工程的关键技巧有哪些？</div>
+    <div class="a">
+      <ul>
+        <li><b>角色设定</b>：明确身份、能力边界、语气（"你是资深后端工程师…"）。</li>
+        <li><b>结构化与少样本（Few-shot）</b>：给出输入→输出示例，固定输出格式（JSON/Markdown），降低解析失败。</li>
+        <li><b>分步引导（CoT）</b>：复杂任务要求"先分析再回答"；<b>思维链 + 约束</b>（只基于给定材料、不得编造）。</li>
+        <li><b>划清边界</b>：明确"不知道就说不清楚，不要胡编"；设置兜底话术。</li>
+        <li><b>变量化 + 迭代评测</b>：把可变部分抽成模板变量，用固定测试集回归对比不同 prompt 效果。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">上下文工程在对话系统中的作用？</div>
+    <div class="a">
+      <ul>
+        <li><b>信息不丢</b>：多轮历史、工具结果、检索片段按需注入，保证模型"记得住"。</li>
+        <li><b>控制成本与延迟</b>：token 越多越贵越慢，通过裁剪/摘要/压缩把预算用在刀刃上。</li>
+        <li><b>提升质量</b>：缓解 Lost in the Middle，把关键信息放显要位置，减少超窗截断导致的失败。</li>
+        <li><b>稳定性</b>：统一 token 预算 + 状态机恢复，支持断流续跑、异常兜底。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">Harness 工程是什么？在 Agent 开发中如何应用？</div>
+    <div class="a">
+      <ul>
+        <li>Harness 是包裹在 LLM 之外的<b>工程脚手架/控制外壳</b>：负责任务编排、工具调用、状态管理、重试、评测与观测，让"薄模型"变成"可落地的系统"。</li>
+        <li>核心组成：<b>循环控制</b>（ReAct 循环、最大步数、终止条件）、<b>工具/协议接入</b>（Function Calling、MCP）、<b>状态与上下文管理</b>（记忆、压缩）、<b>可靠性</b>（重试、降级、超时）、<b>评测与可观测</b>（trace、指标、护栏）。</li>
+        <li>应用：模型只做推理，<b>工程能力沉淀在 Harness</b>里——同一套编排可替换不同模型/工具，也便于灰度、回滚、A/B 评测。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>五、场景题</h2>
+  <div class="qa">
+    <div class="q">场景题：设计一个旅游推荐 Agent，需要考虑哪些模块？</div>
+    <div class="a">
+      <ul>
+        <li><b>意图理解</b>：解析目的地、时间、预算、人数、偏好（亲子/美食/户外）等约束，缺失则反问澄清。</li>
+        <li><b>工具层</b>：机票/酒店/景点/天气/地图 API，通过 Function Calling 或 MCP 接入；</li>
+        <li><b>知识/检索层</b>：攻略、评价、政策（签证/防疫）用 RAG 召回，保证信息新鲜可溯源。</li>
+        <li><b>规划与编排</b>：ReAct 循环，把需求拆成多步（查景点→排行程→订机酒），支持多路并行。</li>
+        <li><b>记忆模块</b>：三层记忆——工作记忆存当前行程草稿，情景记忆存用户历史偏好，语义记忆存稳定旅游知识。</li>
+        <li><b>生成与约束</b>：输出结构化行程（天/时间/地点/预算），做预算校验、时间可行性校验。</li>
+        <li><b>工程保障</b>：SSE 流式、上下文压缩控 token、失败降级（某工具挂了给兜底推荐）、评测与监控。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'agent-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>

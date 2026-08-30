@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八股背诵 · 数据库</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --green: #15803d; --green-bg: #22c55e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #15803d, #22c55e); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--green); border-left: 4px solid var(--green-bg); padding-left: 10px; margin-bottom: 16px; }
+  .qa { margin-bottom: 12px; border: 1px solid var(--line, #e5e7eb); border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #a7e3bd; box-shadow: 0 2px 8px rgba(21,128,61,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #f0faf3; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--green-bg); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #e3f1e7; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: var(--green); }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: var(--green-bg); background: #fff; box-shadow: 0 0 0 2px rgba(34,197,94,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #a7e3bd; background: #fff; color: #15803d; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #15803d; color: #fff; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #f0faf3; color: #15803d; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#15803d; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+<header>
+  <h1>技术类别五 · 数据库</h1>
+  <p>对应简历：MySQL（索引/锁/事务/日志）、Redis（数据类型/缓存问题）</p>
+  <span class="badge">MySQL 索引</span><span class="badge">事务 / 锁 / MVCC</span><span class="badge">日志</span><span class="badge">Redis</span>
+</header>
+
+<div class="tip"><b>说明：</b>本文件按技术类别横切 MySQL 与 Redis 通用八股，覆盖简历"索引、锁机制、事务、日志""缓存持久化、穿透、击穿"技能点。点击问题可折叠/展开答案。</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="section">
+  <h2>一、MySQL 索引</h2>
+  <div class="qa">
+    <div class="q">为什么用 B+ 树？最左前缀？覆盖索引？</div>
+    <div class="a">
+      <ul>
+        <li>B+ 树矮胖、层数少、减少磁盘 IO；叶子成有序链表，范围查询快；非叶子不存数据，查询稳定。</li>
+        <li>最左前缀：联合索引 (a,b,c) 必须从 a 开始才命中。</li>
+        <li>覆盖索引：查询列全在索引，不回表。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">索引失效场景？</div>
+    <div class="a">
+      <ul>
+        <li>索引列做函数/运算、隐式类型转换、like '%xx' 前导模糊、or 连接非索引列、不满足最左前缀、优化器认为全表扫描更快。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>二、事务与锁</h2>
+  <div class="qa">
+    <div class="q">ACID？四种隔离级别？</div>
+    <div class="a">
+      <ul>
+        <li>ACID：原子性、一致性、隔离性、持久性。</li>
+        <li>隔离级别：读未提交（脏读）→ 读已提交（不可重复读）→ 可重复读（幻读，InnoDB 基本解决）→ 串行化。默认可重复读。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">MVCC 原理？</div>
+    <div class="a">
+      <ul>
+        <li>undo log 版本链 + Read View。每行有隐藏事务 ID 和回滚指针，读自己可见的版本，读写不阻塞，实现快照读。</li>
+        <li>配合当前读（for update）和 Next-Key Lock 解决幻读。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">行锁/表锁/间隙锁/Next-Key Lock？乐观锁悲观锁？</div>
+    <div class="a">
+      <ul>
+        <li>行锁锁单行；表锁锁整表；间隙锁锁记录间空隙（防幻读）；Next-Key = 行锁 + 间隙锁。</li>
+        <li>乐观锁：版本号/CAS 不加锁冲突重试；悲观锁：直接加锁适合高冲突。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>三、日志</h2>
+  <div class="qa">
+    <div class="q">redo / binlog / undo 区别？两阶段提交？</div>
+    <div class="a">
+      <ul>
+        <li>redo：引擎层物理日志，崩溃恢复（持久性），WAL 先写日志。</li>
+        <li>binlog：Server 层逻辑日志，主从复制、恢复。</li>
+        <li>undo：记录旧值，回滚 + MVCC。</li>
+        <li>两阶段提交：先 redo prepare → 写 binlog → redo commit，保证两者一致。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>四、Redis</h2>
+  <div class="qa">
+    <div class="q">五种数据类型底层？</div>
+    <div class="a">
+      <ul>
+        <li>String(SDS)、List(quicklist)、Hash(ziplist/hashtable)、Set(intset/hashtable)、ZSet(ziplist/skiplist+dict)。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">缓存穿透 / 击穿 / 雪崩？</div>
+    <div class="a">
+      <ul>
+        <li>穿透（查不存在数据）：缓存空值、布隆过滤器、参数校验。</li>
+        <li>击穿（单个热点 key 过期）：互斥锁回源、热点永不过期/逻辑过期。</li>
+        <li>雪崩（大量 key 同时过期/宕机）：过期加随机值、多级缓存、限流降级、高可用。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">持久化 RDB/AOF？过期删除与淘汰？分布式锁？</div>
+    <div class="a">
+      <ul>
+        <li>RDB 快照：文件小恢复快，可能丢数据；AOF 命令日志：更安全，文件大。</li>
+        <li>过期：惰性删除 + 定期删除；淘汰：LRU/LFU 等策略。</li>
+        <li>分布式锁：SET NX PX 原子加锁 + 唯一 value + Lua 释放，注意续期与误删。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'db-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>

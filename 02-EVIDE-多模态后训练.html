@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EVIDE · 面试复盘（项目介绍 + 项目问题 + 八股）</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --line: #e5e7eb; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --green: #047857; --green-bg: #ecfdf5; --red: #b91c1c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--navy); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 16px; }
+  .section h3 { font-size: 14.5px; color: var(--navy); margin: 16px 0 8px; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #aec6f5; box-shadow: 0 2px 8px rgba(37,99,235,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #eef4ff; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--blue); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #e3ecfb; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a ol { margin: 6px 0 6px 18px; }
+  .a ol li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: var(--blue); }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 2px rgba(37,99,235,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #aec6f5; background: #fff; color: #2563EB; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #2563EB; color: #fff; }
+  .hl { background: var(--tag); color: var(--tag-ink); padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 12.5px; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; }
+  .tip b { color: #92400e; }
+  .warn { background: #fef2f2; border:1px solid #fecaca; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #7f1d1d; margin-bottom: 14px; }
+  .warn b { color: #991b1b; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  .star { color: #f59e0b; }
+  .metric { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 700; color: var(--navy); }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 12.5px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #eef4ff; color: #1d4ed8; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  .toc { background: var(--card); border-radius: 12px; padding: 18px 24px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .toc h2 { font-size: 15px; color: var(--navy); margin-bottom: 8px; }
+  .toc ol { margin-left: 20px; font-size: 13px; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#2563EB; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+
+<header>
+  <h1>EVIDE — 多模态大模型人类意图理解后训练框架</h1>
+  <p>腾讯 CSIG 优图实验室实习 · AAAI 2027 在投（一作）· 专利已申请</p>
+  <span class="badge">SFT / RLHF / GRPO</span>
+  <span class="badge">LoRA / DeepSpeed / FlashAttention</span>
+  <span class="badge">自蒸馏 / 反事实消融</span>
+  <span class="badge">多模态对齐</span>
+</header>
+
+<div class="warn">
+  <b>⚠️ 关键数据速记（务必记牢，不要和简历/论文对不上）：</b>
+  <ul style="margin:6px 0 0 18px;">
+    <li>基座：<b>Qwen3-Omni-30B-A3B-Instruct</b> 和 <b>Qwen2.5-Omni-7B-Instruct</b>（两个都用了）。</li>
+    <li>结果：EVIDE-30B 较基线 <b>+6.9%</b>（0.653→0.722），EVIDE-7B <b>+11.5%</b>（0.556→0.671，追平 HumanSense-30B 的 0.677）。</li>
+    <li>跨基准 IntentBench：较 HumanSense-30B <b>+7.3%</b>（75.29 vs 68.00）。</li>
+    <li>MIRL 成本：仅多 <b>两次推理前向</b>，相对开销 <b>+6%~16%</b>（不是 5%~8%）。</li>
+    <li>EDSD 消融：单向 KL 长度爆炸到 <b>1024+</b>；加 GJSD 降到 <b>233</b>；再加指数衰减降到 <b>220</b>。</li>
+    <li>评测基准：HumanSense（<b>15 任务</b>，L1–L4 四级难度金字塔）。</li>
+  </ul>
+</div>
+
+<div class="tip">
+  <b>💡 面试核心策略：</b>这是你的<b>一作论文</b>，面试官一定会逐字追问每个技术点的<b>动机、原理、与现有方法的区别</b>。不要只背结论，要能讲清"<b>为什么这样做</b>"。本文件分三部分：<b>① 项目介绍（30 秒/2 分钟两版）</b> → <b>② 项目深挖问题（论文细节）</b> → <b>③ 八股基础（通用考点）</b>。点击问题可折叠/展开答案。
+</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#intro">项目介绍（开场必背）</a></li>
+    <li><a href="#project">项目深挖问题（论文技术细节）</a></li>
+    <li><a href="#basics">八股基础（通用考点）</a></li>
+  </ol>
+</div>
+
+<!-- ==================== 一、项目介绍 ==================== -->
+<div class="section" id="intro">
+  <h2>一、项目介绍（开场必背）</h2>
+
+  <div class="qa">
+    <div class="q">用一句话介绍这个项目</div>
+    <div class="a">
+      <p>面向「视频+音频」多模态场景的人类意图理解，我提出并落地了一个叫 <b>EVIDE</b> 的两阶段后训练框架，核心是把大模型隐式的推理链改造成<b>显式的视听证据分解</b>，解决「标注成本高」和「模态信息损失」两大问题，在 HumanSense 基准上 30B 模型提升 6.9%、7B 模型提升 11.5% 并追平 30B。</p>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">用 2 分钟展开介绍（建议背熟）</div>
+    <div class="a">
+      <ol>
+        <li><b>背景与问题</b>：Omni 模型（如 Qwen-Omni）做人类意图理解时有两个耦合瓶颈——① <b>标注成本高</b>，传统方法依赖大规模人工标注的 CoT 数据做 SFT，贵且难扩展；② <b>模态信息损失</b>，视觉和听觉线索被压进同一条隐式推理链，模型容易退化成只依赖单一显著模态的捷径（shortcut），比如"嘴上说好但表情犹豫"这种需要跨模态细粒度线索的场景就识别不准。</li>
+        <li><b>我的核心 idea</b>：把隐式 CoT 重构成显式的四段式证据链 <code>&lt;video&gt; &lt;audio&gt; &lt;reasoning&gt; &lt;answer&gt;</code>，强迫模型先分别显式地提取视觉证据、听觉证据，再做跨模态融合推理。</li>
+        <li><b>阶段一 EDSD（证据分解自蒸馏）</b>：为了不靠人工标注就能学出这个结构，我用<b>特权教师-学生自蒸馏</b>——同一个基座模型既当学生（只看输入）、又当特权教师（额外看参考答案），教师能"倒推"出更合理的证据，学生对齐教师的 token 级分布。但直接做会<b>长度爆炸</b>，所以我用了<b>对称 Generalized-JSD</b> 替换单向 KL，再加<b>指数位置衰减</b>聚焦早期证据 token。</li>
+        <li><b>阶段二 MIRL（模态重要性强化学习）</b>：在 GRPO 基础上，用<b>反事实消融</b>（分别抹掉 video/audio 证据看答案怎么变）来估计每个模态的因果贡献，做<b>符号相关的优势分配</b>——答对了奖励起决定作用的模态，答错了惩罚主导错误的模态。</li>
+        <li><b>结果</b>：EVIDE-30B 在 HumanSense 上较基线 +6.9%，7B +11.5% 且追平 30B，跨基准 IntentBench 也 +7.3%，增益集中在需要视听融合的任务上。论文 AAAI 2027 在投，一作。</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">你的个人贡献具体是什么？（区分"论文贡献"和"你做的部分"）</div>
+    <div class="a">
+      <ul>
+        <li><b>方法层面</b>：EDSD 的对称 GJSD 目标设计 + 指数 token 衰减；MIRL 的反事实消融 + 符号相关优势分配。</li>
+        <li><b>工程层面</b>：基于 Open-R1/TRL 二次开发多模态 GRPO 训练器，实现 token-local advantage 机制；DeepSpeed ZeRO-3 分布式训练、LoRA 微调、冻结视听编码器。</li>
+        <li><b>评测层面</b>：搭建统一多模态评测框架（多模型 adapter + VQA/AQA 评分）。</li>
+        <li><span class="hl">提示</span> 面试官常追问"这些是你独立做的吗？"，建议诚实回答"方法设计和核心模块实现是我主导，训练工程在 mentor 指导下完成"，避免过度夸大。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 二、项目深挖问题 ==================== -->
+<div class="section" id="project">
+  <h2>二、项目深挖问题（论文技术细节，重点背）</h2>
+
+  <h3>2.1 问题动机</h3>
+  <div class="qa">
+    <div class="q">什么是 CoT？隐式 CoT 和你的显式证据链有什么区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>CoT（Chain-of-Thought）</b>：让模型在给出最终答案前先输出一串中间推理步骤，提升复杂任务准确率。</li>
+        <li><b>隐式 CoT</b>：视频、音频等所有线索被压缩进一条没有结构区分的推理链，各模态信息混在一起。</li>
+        <li><b>问题</b>：压缩进单条链后，模型容易<b>退化为依赖单一显著模态的捷径</b>——比如只看嘴型或只靠语气下结论，忽略需要联合多模态的细粒度线索。</li>
+        <li><b>你的做法（显式证据解耦）</b>：拆成四段结构化格式，强迫模型先分别显式提取各模态证据，再做融合。论文 Figure 1 右下就是 EDSD 生成的样例轨迹。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">你论文说的两个瓶颈"标注饥渴"和"模态信息损失"，为什么说它们是耦合的？</div>
+    <div class="a">
+      <ul>
+        <li>这是论文的<b>核心论证</b>（abstract 和 intro 都强调了）：</li>
+        <li>传统方法为什么需要海量手工 CoT 标注？<b>恰恰是因为缺少一个显式的、模态结构化的推理接口</b>——没有这个结构，就只能靠人工标注的 CoT 去"教会"模型怎么推理。</li>
+        <li>反过来，因为推理链是隐式的、没有模态结构，奖励优化时视听线索被压缩，又导致模态信息损失。</li>
+        <li>所以两个问题<b>同源于"缺失显式模态结构接口"</b>，EVIDE 用一个显式证据分解结构同时解决两个问题——这就是论文的核心卖点，面试时要能主动讲出来。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>2.2 EDSD（证据分解自蒸馏）</h3>
+  <div class="qa">
+    <div class="q">什么是自蒸馏？你的教师和学生有什么不同？</div>
+    <div class="a">
+      <ul>
+        <li><b>知识蒸馏</b>：用教师模型的软标签/分布指导学生学习，学生拟合教师的输出概率分布。</li>
+        <li><b>自蒸馏</b>：教师和学生是<b>同一个基座模型</b>。区别在于条件输入：<b>特权教师额外条件于参考答案</b> s_i（所以能"倒推"出更合理的证据），学生只条件于多模态输入 (x^v, x^a, q)。</li>
+        <li><b>token 级对齐</b>：不是对齐整句，而是让学生<b>每个 token 的预测分布</b>逼近教师对应位置的分布（逐 token 算散度）。</li>
+        <li><b>核心价值</b>：教师被"喂"了答案，能生成高质量证据；学生模仿这些证据分布，<b>零人工标注</b>学会证据分解，解决标注成本高。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么朴素的自蒸馏会"长度爆炸"？</div>
+    <div class="a">
+      <ul>
+        <li>单向的教师→学生 KL 与证据分解输出<b>不匹配</b>：教师条件于参考答案时，往往偏好<b>又长又开放式的 &lt;reasoning&gt; 续写</b>，鼓励学生不断延长这一段、延迟输出 EOS。</li>
+        <li>后果：① 输出长度爆炸，更新变贵；② <b>晚期推理 token 主导了 loss</b>，而真正决定答案的<b>早期证据 token 反而监督不足</b>。</li>
+        <li>论文里给了具体数字：朴素 EDSD（单向 KL + 均匀权重）在长度预算内根本产出不了合法输出，长度直接冲到 <span class="metric">1024+</span>。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么用对称 Generalized-JSD 替代 KL？公式是什么？</div>
+    <div class="a">
+      <ul>
+        <li><b>KL 的问题</b>：不对称；当教师分布某 token 概率趋近 0 时 KL 会发散、数值不稳定；单向 KL 让学生一味覆盖教师长尾，教师推理一"漂"学生跟着飘。</li>
+        <li><b>对称 JSD</b>：<code>d = ½·KL(p_s ‖ m) + ½·KL(p_t ‖ m)</code>，其中 <code>m = ½·p_s + ½·p_t</code> 是混合分布。对称意味着两个方向都约束；因为 m 是平均，p 或 q 为 0 处不会出现无穷大，数值稳定。</li>
+        <li><b>关键思想</b>：不是"把学生拉向教师特权分布"，而是"把两者对齐到共享的混合分布"——这样能抑制教师的长尾推理漂移，稳定 EOS 输出。</li>
+        <li><b>效果</b>：长度从 1024+ 降到 <span class="metric">233</span>。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么对早期 token 做指数位置衰减？</div>
+    <div class="a">
+      <ul>
+        <li>证据链里<b>早期证据 token 因果决定了后续推理和答案</b>——证据错了，后面推理再对也没用；而晚期 &lt;reasoning&gt; token 容易"漂"。</li>
+        <li>所以对 per-token 散度施加随<b>相对位置指数衰减</b>的权重：<code>w = exp(-λ_p·(n-1)/T)</code>，越靠前的证据 token 权重越大，越靠后的冗余 token 权重越小。</li>
+        <li>效果：把监督<b>聚焦早期关键证据</b>，进一步抑制长度爆炸（长度再降到 <span class="metric">220</span>），并让证据提取更扎实。</li>
+        <li>消融显示：加指数衰减后每个任务都涨，最明显的是 RG（+3.0 分）——因为长程意图链最需要早期 token 的强监督。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">EDSD 的消融结论是什么？（三个层级）</div>
+    <div class="a">
+      <ul>
+        <li><b>① 显式证据分解的增量价值</b>：对比"只有 &lt;reasoning&gt;/&lt;answer&gt; 的隐式 CoT 自蒸馏"，EDSD 在多任务上提升，平均 +2.4 分，增益集中在模态敏感任务（GR +4.7、CM +3.5、PA +3.3 等）。</li>
+        <li><b>② EDSD 整体优于隐式 CoT 基线</b>：EDSD 单独就达到 0.707，超过 Qwen3-Omni-30B 基线（0.653）和 HumanSense-30B 专家（0.677），且无需任何手工 CoT 标注。</li>
+        <li><b>③ 目标函数组件必要性</b>：单向 KL 直接失效（长度爆炸）；加 GJSD 稳定格式；再加指数衰减进一步提升所有任务。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>2.3 MIRL（模态重要性强化学习）</h3>
+  <div class="qa">
+    <div class="q">GRPO 原版在模态场景有什么不足？为什么需要 MIRL？</div>
+    <div class="a">
+      <ul>
+        <li>标准 GRPO 给<b>整条序列一个统一的优势信号</b>，无法区分"答案对到底是谁的功劳"。</li>
+        <li>多模态场景下，模型可能<b>只靠单一显著模态</b>（比如光听声音）就答对，导致跨模态线索被忽略——即"模态信息损失"。</li>
+        <li><b>MIRL 思想</b>：按各模态对答案的<b>真实因果贡献</b>分配奖励，让"决定性模态"拿更多正反馈、"主导错误的模态"被更强惩罚。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">什么是反事实模态消融？怎么量化模态的因果贡献？</div>
+    <div class="a">
+      <ul>
+        <li><b>反事实（counterfactual）</b>：问"如果某模态不存在，结果会怎样"。借鉴因果推断（Pearl）的思想。</li>
+        <li><b>实现</b>：把生成轨迹里的 <code>&lt;video&gt;</code> 或 <code>&lt;audio&gt;</code> 段<b>内容替换成占位符</b>（"No visual evidence." / "No audio evidence."），构造两条反事实轨迹 y^{-v} 和 y^{-a}。</li>
+        <li><b>关键细节</b>：<b>保留周围的标签</b>（tag），只替换内容——这样防止"格式损坏"被误判成"模态重要性"，让归因信号反映的是<b>内容</b>而非<b>结构</b>。这是论文强调的一个巧妙点。</li>
+        <li>若抹掉某模态后答案大幅变差，说明该模态因果贡献大；几乎没变化则说明模型本来就没用上它。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">符号相关优势分配（sign-dependent credit assignment）具体怎么算？</div>
+    <div class="a">
+      <ul>
+        <li>对<b>正优势（A_i &gt; 0，答对）</b>：用 <b>answer-likelihood attribution</b>。锚定 &lt;answer&gt; 段，计算在"抹掉某模态的前缀"下，ground-truth 答案 a* 的<b>平均 log-likelihood</b> s^{-v} / s^{-a}。谁被抹掉后答案似然下降更多，谁就更重要。用 sigmoid 把差异映射成模态权重：<code>p^v = σ((s^{-a} - s^{-v})/τ)</code>，权重 <code>w = 2p</code>。</li>
+        <li>对<b>负优势（A_i &lt; 0，答错）</b>：用 <b>reasoning-support attribution</b>。锚定 &lt;reasoning&gt; 段，计算在抹掉某模态的前缀下复现原错误推理的<b>平均熵</b> h^{-v} / h^{-a}。谁被抹掉后复现错误推理的熵越高，说明它越"维系"着这个错误，就越该被惩罚。<code>q^v = σ((h^{-v} - h^{-a})/τ)</code>。</li>
+        <li><b>为什么符号要分开</b>：正负样本里"模态重要性"的语义不同——正样本问"谁支撑了正确答案"，负样本问"谁支撑了错误推理"。</li>
+        <li><b>因子 2</b>：<code>w=2p</code> 是为了保持平均更新尺度不变——当两模态同等重要（p=1/2）时，退化成标准 GRPO。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">token-local advantage 是怎么做的？</div>
+    <div class="a">
+      <ul>
+        <li>GRPO 原本是<b>序列级优势</b> A_i，每个 token 都一样。MIRL 把它换成<b>token-local 优势</b>：</li>
+        <li><code>&lt;video&gt;</code> 段的 token 乘以 w^v·A_i，<code>&lt;audio&gt;</code> 段乘以 w^a·A_i，<b>其余段（&lt;reasoning&gt;/&lt;answer&gt;）保持原始 A_i 不变</b>。</li>
+        <li>好处：<b>只优化证据质量，不干扰答案本身的优化</b>；最终答案的优化路径不受影响。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">MIRL 的成本高吗？为什么？</div>
+    <div class="a">
+      <ul>
+        <li><b>几乎零额外成本</b>：不引入任何可训练参数，也不增加反向传播。</li>
+        <li>只增加<b>两次纯推理的前向</b>（分别消融 video、audio 各一次）。</li>
+        <li>论文给了精确分析：GRPO 成本 C_GRPO = Gα+β+γ，MIRL 成本 C_MIRL = Gα+β+3γ，相对开销 = 2γ/(Gα+β+γ)。在 G=8 下，额外成本仅 <span class="metric">+6%~16%</span>。</li>
+        <li>这个"低成本高收益"是论文卖点之一，面试要主动讲。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">MIRL 的消融结论？它的适用范围是什么？</div>
+    <div class="a">
+      <ul>
+        <li><b>MIRL vs GRPO</b>（同 EDSD 初始化，仅替换奖励分配方式）：5 个模态敏感任务（TR/FR/RR/RG/ES）全部提升，平均 0.781→0.794，最大 RR +2.7、ES +1.3。</li>
+        <li><b>适用范围（诚实说局限）</b>：MIRL 的增益集中在<b>双模态任务</b>（视听都可能影响答案）。在<b>单模态主导</b>的任务上，MIRL 与 GRPO 持平——因为对比信号变弱。所以论文把它定位为"bimodal optimizer"，面试时主动说这个局限反而加分。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>2.4 实验与结果</h3>
+  <div class="qa">
+    <div class="q">你的实验是怎么设计的？为什么用两个基座？</div>
+    <div class="a">
+      <ul>
+        <li><b>主实验</b>在 Qwen3-Omni-30B-A3B-Instruct 上做（对比其原始后训练配方 vs EVIDE 全流程）。</li>
+        <li><b>迁移性验证</b>：把 EVIDE 也应用到 Qwen2.5-Omni-7B-Instruct，验证设计不依赖特定骨干。因为 7B 模型开箱就不太遵守四段式输出格式，先花 3% 训练数据做了<b>轻量格式稳定阶段</b>（format-stabilization），教会它稳定遵循证据分解结构。</li>
+        <li><b>跨基准</b>：用 IntentBench 验证 HumanSense 上的增益不是过拟合特定评测。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">结果里最有说服力的点是什么？</div>
+    <div class="a">
+      <ul>
+        <li><b>7B 追平 30B</b>：EVIDE-7B 达到 0.671，接近 HumanSense-30B（0.677），说明增益来自"显式保留并归因模态证据"，而非单纯堆骨干规模。</li>
+        <li><b>增益集中在视听融合任务</b>（AR/GR/PA/PC 等），正好命中"需要细粒度视听证据"的场景，佐证了方法动机。</li>
+        <li><b>跨基准泛化</b>：IntentBench 上 +7.3%，说明不是过拟合 HumanSense 统计特征，学到的证据分解结构可迁移。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么增益集中在视听融合类任务，这说明了什么？</div>
+    <div class="a">
+      <ul>
+        <li>这些任务（AR 融洽识别、GR、PA、PC 等）需要<b>保留细粒度的视觉+听觉证据再做跨模态推理</b>，单靠一个模态会失败。</li>
+        <li>EVIDE 显式地、分别地保留了视听证据，MIRL 又正确归因了决定性模态，所以这类任务收益最大。</li>
+        <li>这<b>反过来印证了方法动机</b>：不是"更大的模型"在起作用，而是"显式证据结构 + 模态感知奖励"在起作用。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 三、八股基础 ==================== -->
+<div class="section" id="basics">
+  <h2>三、八股基础（通用考点）</h2>
+
+  <h3>3.1 训练范式</h3>
+  <div class="qa">
+    <div class="q">SFT / RLHF / DPO / GRPO 分别是什么？有什么区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>SFT（监督微调）</b>：在 (prompt, 期望回答) 上做交叉熵训练，学会"照着答案说"。是后训练第一步，只模仿、不主动优化目标。</li>
+        <li><b>RLHF</b>：先训 Reward Model 打分，再用 PPO 最大化奖励。流程 SFT → RM → PPO。问题：要训 critic、流程复杂、易 reward hacking。</li>
+        <li><b>DPO</b>：跳过 RM 和 RL，直接从偏好数据用闭式 loss 优化，等价隐式拟合 RM。优点稳定省资源；缺点 off-policy，无法在线探索。</li>
+        <li><b>GRPO</b>：PPO 改进，<b>去掉 critic</b>，对同一 prompt 采样 N 个回答，用<b>组内相对优势</b>（减组均值除以标准差）代替价值网络。省显存、稳定、可大规模。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">RLHF 完整流程？RM 是干嘛的？什么是 reward hacking？</div>
+    <div class="a">
+      <ul>
+        <li><b>流程</b>：预训练 → SFT → 用人类排序数据训 RM（输入 prompt+回答，输出标量分数）→ 用 PPO/GRPO 以 RM 分数为奖励优化策略。</li>
+        <li><b>RM 作用</b>：把人类偏好变成可微分的标量奖励，替代人在回路实时打分。</li>
+        <li><b>Reward hacking</b>：模型钻 RM 空子（刷长度、堆讨好词），分数虚高但质量没提升。缓解：KL 约束、更严的奖励设计。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">GRPO 为什么能去掉 critic？优势怎么算？</div>
+    <div class="a">
+      <ul>
+        <li>PPO 需要 critic（价值网络 V(s)）估计优势 A = R - V(s)，critic 要额外训练、占显存。</li>
+        <li>GRPO：同一 prompt 采样 N 个候选，每个打 reward r_i，做组内标准化 <code>A_i = (r_i - mean(r)) / std(r)</code>。</li>
+        <li>用统计相对值代替绝对价值估计，省掉 critic。</li>
+        <li>目标函数带 KL 惩罚，约束策略不偏离参考模型（通常是 SFT 后的模型）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">on-policy 和 off-policy 有什么区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>on-policy</b>：更新策略的数据必须由<b>当前策略自己采样</b>。PPO/GRPO 是 on-policy，每次更新前先 rollout，更新几次后数据"过期"要重采，计算量大、要分布式。</li>
+        <li><b>off-policy</b>：可用历史或其他策略采样的数据更新当前策略，数据可复用。DPO、SFT 本质 off-policy。</li>
+        <li>你论文"on-policy 自蒸馏"强调：学生用自己当前策略采样，再对齐教师分布，<b>保持训练与推理分布一致</b>，避免分布漂移。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.2 参数高效微调与分布式</h3>
+  <div class="qa">
+    <div class="q">LoRA 的原理？为什么冻结主干只训 adapter？</div>
+    <div class="a">
+      <ul>
+        <li><b>原理</b>：假设权重更新低秩，ΔW ≈ B·A，A、B 是两个小矩阵（秩 r 远小于原始维度）。训练时冻结 W，只更新 A、B，推理合并成 W + BA。</li>
+        <li><b>为什么冻结主干</b>：可训练参数降到极小（通常 &lt;1%），显存算力大幅下降，不改原结构、便于切换部署。</li>
+        <li><b>你的场景</b>：只解冻 LLM 文本主干的线性层（LoRA 注入处），冻结视听编码器——编码器已预训练、特征够好，多模态微调重点在"融合推理"而非"重学特征"。</li>
+        <li><b>rank 选择</b>：r 越大表达能力越强但参数越多，通常 8/16/32。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">DeepSpeed ZeRO 三个阶段？显存怎么省的？</div>
+    <div class="a">
+      <ul>
+        <li>显存主要被<b>参数、优化器状态（Adam momentum+variance）、梯度</b>占据，ZeRO 把这三块切分到多卡。</li>
+        <li><b>ZeRO-1</b>：只切分优化器状态。</li>
+        <li><b>ZeRO-2</b>：再切分梯度。</li>
+        <li><b>ZeRO-3</b>：三样全切分，每卡只保留当前计算需要的参数片，需要时通信取回，<b>省显存最大</b>。</li>
+        <li>代价：通信开销增加，需高速互联（NVLink/InfiniBand）。你用 ZeRO-3 因为 30B + 多模态输入显存压力大。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">FlashAttention 为什么快？bf16 和 fp16 的区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>FlashAttention</b>：传统 attention 把 QK^T 的 N×N 中间矩阵写到 HBM 再读回，IO 是瓶颈。FlashAttention 是 IO-aware 的——分块（tiling）、在 SRAM 里完成 softmax 分块重算，避免反复读写大矩阵。</li>
+        <li><b>分块 softmax</b>：softmax 分母需全局 max/sum，用 online 方式分块算再合并，数学正确且不落地大矩阵。</li>
+        <li><b>bf16 vs fp16</b>：fp16 指数位少（5 位）范围小、易溢出；bf16 指数位和 fp32 一样 8 位，动态范围大、不易溢出，但尾数少精度略低。</li>
+        <li><b>混合精度</b>：fp16 需 loss scaling（放大 loss 防下溢），bf16 范围大通常不需要，更稳。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.3 多模态</h3>
+  <div class="qa">
+    <div class="q">多模态模型（Qwen-Omni）的架构特点？视听编码器为什么冻结？</div>
+    <div class="a">
+      <ul>
+        <li><b>Omni 模型</b>：同时处理文本+图像/视频+音频，用独立视觉编码器（ViT）和音频编码器把各模态编码成 token，经投影层对齐到 LLM 文本嵌入空间，交给 LLM 主干做跨模态融合推理。</li>
+        <li><b>跨模态对齐</b>：多模态输入映射成"LLM 能读懂的 token 序列"，语言模型充当通用推理引擎。</li>
+        <li><b>为什么冻结编码器</b>：编码器已预训练学会通用特征；冻结省显存算力，微调重点在"多模态融合与推理"（LLM 主干 + 投影），而非重学底层特征。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">什么是知识蒸馏？soft label 和 hard label 的区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>知识蒸馏</b>：用教师模型的输出分布指导学生学习，传递"暗知识"。</li>
+        <li><b>hard label</b>：one-hot 真值，只告诉"答案是 A"，信息量少。</li>
+        <li><b>soft label</b>：教师输出的概率分布，告诉"A 最可能、B 次可能"，携带类别间相似性的暗知识，学生能学到更平滑的决策边界。</li>
+        <li>通常用温度 T 软化：softmax(z/T)，T 越大分布越平滑，蒸馏时学生也用相同 T，推理时 T=1。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">什么是反事实（counterfactual）？它和相关性（correlation）有什么区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>相关性</b>：观察到"有视频时答案对得多"，但可能是伪相关（有视频的数据本身更简单）。</li>
+        <li><b>反事实/因果</b>：问"如果抹掉视频，答案会怎样"，干预（intervention）后看结果差异，才能判断真正的因果贡献。</li>
+        <li>你的 MIRL 就是借鉴因果推断（Pearl 的 do-算子思想），用消融（intervention）而非相关性来估计模态重要性。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.4 评测与调优</h3>
+  <div class="qa">
+    <div class="q">大模型评测怎么做？为什么要有多个基准？</div>
+    <div class="a">
+      <ul>
+        <li>用统一评测框架，对多个 benchmark（HumanSense、IntentBench）和多个模型做打分（VQA/AQA），保证可比性。</li>
+        <li>多个基准是为了<b>验证泛化</b>：单一基准可能过拟合其统计特征，跨基准（IntentBench）才证明方法真正可迁移。</li>
+        <li>你的项目里，自研评测框架用注册式 benchmark + 多模型 adapter，方便横向对比。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">什么是长度爆炸（length explosion）？还有什么缓解手段？</div>
+    <div class="a">
+      <ul>
+        <li><b>长度爆炸</b>：RL/蒸馏训练中，模型发现"写更长"能刷高 reward（或拟合教师长尾），于是输出越来越长、不吐 EOS，训练变慢、质量下降。</li>
+        <li>你的缓解：对称 GJSD（抑制长尾漂移）+ 指数位置衰减（弱化晚期 token 监督）。</li>
+        <li>其他常见手段：长度惩罚（length penalty）、reward 里加长度项、token 级奖励裁剪、KL 约束。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'evide-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>

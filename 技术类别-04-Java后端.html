@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八股背诵 · Java 后端</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --orange: #c2410c; --orange-bg: #f97316;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #c2410c, #f97316); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--orange); border-left: 4px solid var(--orange-bg); padding-left: 10px; margin-bottom: 16px; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #f7c2a3; box-shadow: 0 2px 8px rgba(194,65,12,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #fef4ee; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--orange-bg); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #fbe6da; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: var(--orange); }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: var(--orange-bg); background: #fff; box-shadow: 0 0 0 2px rgba(249,115,22,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #f7c2a3; background: #fff; color: #c2410c; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #c2410c; color: #fff; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #fef4ee; color: #c2410c; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#c2410c; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+<header>
+  <h1>技术类别四 · Java 后端</h1>
+  <p>对应简历：Java 基础、集合、多线程并发、Spring Boot、RocketMQ</p>
+  <span class="badge">集合</span><span class="badge">并发 / JVM</span><span class="badge">Spring Boot</span><span class="badge">消息队列</span>
+</header>
+
+<div class="tip"><b>说明：</b>本文件按技术类别横切 Java 后端通用八股，覆盖简历里"Java 基础编程 / 集合 / 多线程 / 并发"技能点。点击问题可折叠/展开答案。</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="section">
+  <h2>一、集合</h2>
+  <div class="qa">
+    <div class="q">HashMap 底层？扩容？</div>
+    <div class="a">
+      <ul>
+        <li>数组 + 链表 + 红黑树。JDK8 起链表长度 >8 且数组 >64 转红黑树。</li>
+        <li>默认容量 16、负载因子 0.75，超过阈值扩容为 2 倍，重新 hash。</li>
+        <li>put 流程：hash → 定位桶 → 冲突链表/红黑树插入。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">ConcurrentHashMap 如何保证线程安全？</div>
+    <div class="a">
+      <ul>
+        <li>JDK7：分段锁（Segment）；JDK8：<b>CAS + synchronized</b> 锁单个桶头节点，细粒度更高、并发更好。</li>
+        <li>读操作无锁（volatile 保证可见性），扩容支持多线程协作。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">ArrayList vs LinkedList？</div>
+    <div class="a">
+      <ul>
+        <li>ArrayList：数组，随机访问 O(1)，中间插入删除 O(n)，适合读多写少。</li>
+        <li>LinkedList：双向链表，随机访问 O(n)，头尾插入删除 O(1)，适合频繁增删。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>二、并发与 JVM</h2>
+  <div class="qa">
+    <div class="q">synchronized vs Lock？volatile？</div>
+    <div class="a">
+      <ul>
+        <li>synchronized：隐式锁，自动加解锁，JVM 层面（偏向锁/轻量锁/重量锁升级）。</li>
+        <li>Lock（ReentrantLock）：显式锁，可中断、可超时、可公平、条件变量，需手动 unlock。</li>
+        <li>volatile：保证可见性 + 禁止指令重排，但不保证原子性。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">线程池核心参数？拒绝策略？</div>
+    <div class="a">
+      <ul>
+        <li>七参数：corePoolSize、maximumPoolSize、keepAliveTime、unit、workQueue、threadFactory、handler。</li>
+        <li>拒绝策略：AbortPolicy（抛异常）、CallerRunsPolicy（调用者执行）、DiscardPolicy（丢弃）、DiscardOldestPolicy（丢最旧）。</li>
+        <li>执行流程：先核心线程 → 队列满 → 扩到最大 → 仍满 → 拒绝策略。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">ThreadLocal 原理？内存泄漏？</div>
+    <div class="a">
+      <ul>
+        <li>每个线程有自己的 ThreadLocalMap，key 是 ThreadLocal 弱引用，value 是值。</li>
+        <li>内存泄漏：key 被 GC 后 value 无法访问但还在 map 里，需用完 remove()。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">JVM 内存区域？GC 算法？类加载？</div>
+    <div class="a">
+      <ul>
+        <li>区域：堆（新生代 Eden+Survivor、老年代）、方法区（元空间）、虚拟机栈、本地方法栈、程序计数器。</li>
+        <li>GC：可达性分析判定垃圾；算法有标记-清除、复制（新生代）、标记-整理（老年代）；收集器 CMS/G1（G1 分 Region，可预测停顿）。</li>
+        <li>类加载：加载 → 验证 → 准备 → 解析 → 初始化；双亲委派机制。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>三、Spring 与消息队列</h2>
+  <div class="qa">
+    <div class="q">Spring IoC / AOP？Bean 生命周期？</div>
+    <div class="a">
+      <ul>
+        <li>IoC：对象创建依赖交给容器，@Autowired 注入，核心是 Bean 容器。</li>
+        <li>AOP：抽横切逻辑（日志/鉴权/事务）用代理织入；JDK 动态代理（接口）+ CGLIB（子类）。</li>
+        <li>Bean 生命周期：实例化 → 属性注入 → Aware → 初始化 → 使用 → 销毁。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">CompletableFuture 编排？</div>
+    <div class="a">
+      <ul>
+        <li>异步任务编排：thenCombine（合并两个）、allOf（全部完成）、anyOf（任一完成）等。</li>
+        <li>你的多路召回用 CompletableFuture 四通道并行 + 超时降级。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">RocketMQ 可靠性？事务消息？幂等？</div>
+    <div class="a">
+      <ul>
+        <li>可靠性：生产端确认重试、Broker 持久化主从同步、消费端 ACK 重试。</li>
+        <li>事务消息：半消息 → 执行本地事务 → Commit/Rollback，保证本地事务与消息一致。</li>
+        <li>幂等：至少一次投递会有重复，用唯一键去重、状态机判断。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">MyBatis-Plus vs MyBatis？</div>
+    <div class="a">
+      <ul>
+        <li>MyBatis 半自动，手写 SQL；MyBatis-Plus 增强版，内置通用 CRUD、条件构造器、分页插件，保留手写能力。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'java-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>

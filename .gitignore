@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+Thumbs.db
+
+# 本地备份
+.backup/

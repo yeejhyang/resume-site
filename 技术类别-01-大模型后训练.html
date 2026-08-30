@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八股背诵 · 大模型后训练</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--navy); border-left: 4px solid var(--blue); padding-left: 10px; margin-bottom: 16px; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #aec6f5; box-shadow: 0 2px 8px rgba(37,99,235,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #eef4ff; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--blue); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #e3ecfb; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: var(--blue); }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 2px rgba(37,99,235,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #aec6f5; background: #fff; color: #2563EB; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #2563EB; color: #fff; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #eef4ff; color: #1d4ed8; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#2563EB; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+<header>
+  <h1>技术类别一 · 大模型后训练</h1>
+  <p>对应简历：EVIDE 论文、专业技能里的 SFT/GRPO/RLHF/LoRA/DeepSeek ZeRO</p>
+  <span class="badge">训练范式</span><span class="badge">参数高效</span><span class="badge">分布式训练</span><span class="badge">多模态</span>
+</header>
+
+<div class="tip"><b>说明：</b>本文件是<b>按技术类别</b>的横切总结，与「项目维度」的 EVIDE 文件内容互补。这里聚焦"通用八股考点"，不再重复论文专属细节。点击问题可折叠/展开答案。</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="section">
+  <h2>一、训练范式</h2>
+  <div class="qa">
+    <div class="q">SFT / RLHF / DPO / GRPO 的区别？</div>
+    <div class="a">
+      <ul>
+        <li><b>SFT</b>：监督微调，在 (prompt, 答案) 上做交叉熵，学会模仿，是后训练第一步。</li>
+        <li><b>RLHF</b>：训 Reward Model 打分 + PPO 优化，能主动优化目标，但需训 critic、流程复杂、易 reward hacking。</li>
+        <li><b>DPO</b>：跳过 RM 和 RL，用闭式 loss 直接从偏好数据优化，稳定省资源，但 off-policy 无法在线探索。</li>
+        <li><b>GRPO</b>：PPO 改进，<b>去掉 critic</b>，用组内 N 个回答的相对优势（标准化）代替价值估计，省显存、可大规模。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">RLHF 完整流程？reward hacking 是什么？</div>
+    <div class="a">
+      <ul>
+        <li>流程：预训练 → SFT → 训 RM（人类排序数据）→ PPO/GRPO 用 RM 分数做奖励优化策略。</li>
+        <li>RM 作用：把人类偏好变成可微分标量，替代人在回路打分。</li>
+        <li>reward hacking：模型钻 RM 盲区刷分（堆长度、讨好词），分数虚高但质量没提升。缓解：KL 约束、更严奖励设计。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">GRPO 优势怎么算？on-policy / off-policy？</div>
+    <div class="a">
+      <ul>
+        <li>对同 prompt 采样 N 个回答，各得 reward r_i，组内标准化 <code>A_i = (r_i - mean)/std</code>，正负优势区分好坏。</li>
+        <li>目标带 KL 惩罚项，约束策略不偏离参考模型。</li>
+        <li>on-policy：数据须由当前策略采样（PPO/GRPO），数据过期需重采、成本高；off-policy：可用历史数据（SFT/DPO）。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">模型调优的步骤？</div>
+    <div class="a">
+      <ul>
+        <li>① <b>明确目标与数据</b>：定义任务、指标，收集/清洗/标注高质量数据（对齐分布、去脏）。</li>
+        <li>② <b>基线与评估</b>：先跑现有模型建基线，设计离线评测集（自动指标 + 人工/LLM 打分）。</li>
+        <li>③ <b>选择方法</b>：优先 prompt/上下文工程（零成本）→ 数据不够或需改行为再 SFT → 要按偏好优化用 DPO/GRPO/RLHF。</li>
+        <li>④ <b>训练与调参</b>：小规模实验定学习率/batch/epoch，用 LoRA 等省资源方案，监控 loss 与过拟合。</li>
+        <li>⑤ <b>评估与迭代</b>：对比基线看提升，检查失败 case，回补数据/调奖励，防止 reward hacking 与灾难性遗忘。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">BERT 小模型相比大模型有哪些优缺点？</div>
+    <div class="a">
+      <ul>
+        <li><b>优点</b>：参数量小、<b>推理快、成本低、易部署</b>（可边缘/端侧）；对<b>分类、命名实体、相似度、检索向量</b>等固定任务够用；可针对垂直领域精调，可控性强、可解释性相对好。</li>
+        <li><b>缺点</b>：<b>生成能力弱</b>（主要做理解/编码，非自回归生成）；<b>知识量少、泛化弱</b>，复杂推理/多步/开放域对话不如大模型；需为每个任务单独微调，无法"一个模型打天下"。</li>
+        <li><b>定位</b>：小模型做<b>特征提取/判别/召回</b>（如 RAG 的 embedding、rerank、分类路由），大模型做<b>生成与推理</b>，二者常混合使用。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>二、参数高效微调与分布式</h2>
+  <div class="qa">
+    <div class="q">LoRA 原理？rank 怎么选？</div>
+    <div class="a">
+      <ul>
+        <li>假设权重更新低秩：ΔW = B·A，冻结 W 只训 A、B，推理合并 W+BA。</li>
+        <li>可训练参数 <1%，省显存算力，不破坏原模型。</li>
+        <li>rank r 越大表达能力越强，通常 8/16/32，权衡效果与效率。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">DeepSpeed ZeRO 三个阶段？</div>
+    <div class="a">
+      <ul>
+        <li>显存三大块：参数、优化器状态、梯度。ZeRO 把它们切分到多卡。</li>
+        <li>ZeRO-1 切优化器状态；ZeRO-2 再切梯度；<b>ZeRO-3 三者全切</b>，每卡只留当前需要的参数片，按需通信取回，省显存最大，代价是通信开销。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">FlashAttention 为什么快？bf16 vs fp16？</div>
+    <div class="a">
+      <ul>
+        <li>IO-aware：分块（tiling）+ SRAM 内 online softmax，避免 N×N 中间矩阵反复读写 HBM。</li>
+        <li>bf16 指数位同 fp32（8 位），动态范围大不易溢出，一般无需 loss scaling；fp16 范围小易溢出，需 loss scaling。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>三、多模态与 CoT</h2>
+  <div class="qa">
+    <div class="q">CoT 是什么？隐式 vs 显式推理链？</div>
+    <div class="a">
+      <ul>
+        <li>CoT：让模型先输出中间推理步骤再给答案，提升复杂问题准确率。</li>
+        <li>隐式 CoT：所有线索压进单条链，易退化依赖单一显著模态捷径。</li>
+        <li>显式证据解耦：结构化拆成 &lt;video&gt;&lt;audio&gt;&lt;reasoning&gt;&lt;answer&gt;，强制分模态提取再融合。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">多模态模型（Omni）架构？为什么冻结编码器？</div>
+    <div class="a">
+      <ul>
+        <li>视觉编码器（ViT）+ 音频编码器分别编码，经投影层对齐到 LLM 文本空间，LLM 做跨模态融合推理。</li>
+        <li>编码器已预训练学好通用特征，冻结省显存，微调重点在融合推理而非重学特征。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">自蒸馏、token 级对齐、JSD vs KL？</div>
+    <div class="a">
+      <ul>
+        <li>自蒸馏：师生同基座，特权教师条件于答案、学生条件于输入，逐 token 对齐概率分布，实现零标注。</li>
+        <li>KL 不对称、P→0 处无穷、易长度爆炸；<b>对称 JSD = ½KL(P||M)+½KL(Q||M)</b>（M 混合分布）数值稳定、抑制漂移。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'posttrain-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>

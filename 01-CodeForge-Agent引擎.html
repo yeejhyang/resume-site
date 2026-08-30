@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面试备战 · CodeForge 代码生成 Agent 引擎</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --line: #e5e7eb; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --teal: #0f766e; --teal-bright: #14b8a6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; letter-spacing: .5px; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: #0f766e; border-left: 4px solid #14b8a6; padding-left: 10px; margin-bottom: 16px; }
+  .section h3 { font-size: 15px; color: var(--navy); margin: 18px 0 8px; }
+
+  /* 问题卡片（可点击折叠） */
+  .qa { margin-bottom: 12px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #99d6cd; box-shadow: 0 2px 8px rgba(15,118,110,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
+    font-weight: 700; font-size: 14.5px; color: #111827;
+    padding: 12px 14px; margin: 0; background: #f8fafc;
+  }
+  .q:hover { background: #eef7f5; }
+  .q .qicon {
+    flex: none; display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; background: #14b8a6; color: #fff;
+    border-radius: 6px; font-size: 12px; font-weight: 800;
+  }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+
+  /* 答案区：折叠时隐藏 */
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #e6f1ef; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a ol { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: #0f766e; }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: #14b8a6; background: #fff; box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .hl { background: var(--tag); color: var(--tag-ink); padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 12.5px; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  .tip b { color: #92400e; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  pre { background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px; font-size: 12px; line-height: 1.6; overflow-x: auto; margin: 10px 0; font-family: "SF Mono",Menlo,Consolas,monospace; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  .flow { background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 10px 0; font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12.5px; line-height: 1.7; white-space: pre; overflow-x: auto; color: #334155; }
+  .num { font-family: "SF Mono",Menlo,Consolas,monospace; font-weight: 700; color: #0f766e; }
+
+  /* —— 双版本回答：通俗版 / 专业版 —— */
+  .ver { border-radius: 8px; padding: 12px 14px; margin: 10px 0; }
+  .ver:first-child { margin-top: 0; }
+  .ver .ver-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 800; letter-spacing: .5px;
+    padding: 2px 10px; border-radius: 12px; margin-bottom: 8px;
+  }
+  .ver-simple { background: #f0f9ff; border: 1px solid #bae0fd; }
+  .ver-simple .ver-tag { background: #0284c7; color: #fff; }
+  .ver-pro { background: #f8fafc; border: 1px solid #cbd5e1; }
+  .ver-pro .ver-tag { background: #0f766e; color: #fff; }
+  .ver p { margin-bottom: 6px; }
+  .ver ul { margin: 4px 0 4px 16px; }
+  .ver li { margin-bottom: 4px; }
+  .ver p:last-child, .ver li:last-child { margin-bottom: 0; }
+  .ver .flow { margin: 6px 0; }
+  .ver h4 { font-size: 13px; color: var(--navy); margin: 8px 0 4px; }
+
+  /* 全局控制条 */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button {
+    border: 1px solid #99d6cd; background: #fff; color: #0f766e;
+    font-size: 12.5px; font-weight: 600; padding: 6px 14px;
+    border-radius: 20px; cursor: pointer; transition: all .15s;
+  }
+  .toolbar button:hover { background: #0f766e; color: #fff; }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .toc a { background: var(--card); border: 1px solid var(--line); color: var(--teal); text-decoration: none; font-size: 12.5px; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
+  .toc a:hover { background: var(--tag); }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #f1f8f6; color: #0f766e; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>CodeForge — 代码生成 Agent 引擎</h1>
+  <p>面向代码生成 Agent「澄清 → 规划 → 写代码 → 构建 → 部署」全流程，解决生成效率低、生成质量差两大难题的落地项目。</p>
+  <span class="badge">单主 Agent / 按需子代理</span>
+  <span class="badge">三级上下文压缩 / Token 预算</span>
+  <span class="badge">数据驱动评测 / 可量化指标</span>
+  <span class="badge">Playwright 质量闭环 / 防失真</span>
+</header>
+
+<div class="toc">
+  <a href="#part0">0. 项目总览</a>
+  <a href="#part1">1. 技术架构详解</a>
+  <a href="#part2">2. 上下文管理</a>
+  <a href="#part3">3. 质量保障闭环</a>
+  <a href="#part4">4. 项目问题（基于简历）</a>
+  <a href="#part5">5. 可量化评估体系</a>
+  <a href="#part6">6. 通用八股</a>
+</div>
+
+<div class="tip">
+  <b>💡 面试主线：</b>这个项目的关键词是<b>"数据驱动的架构决策"</b>。面试官会追着问：<b>"为什么从多级委托改成单主 Agent"</b>、<b>"三级上下文压缩分别怎么实现"</b>、<b>"质量反思闭环如何防住模型'假交付'"</b>。每一层都要能讲清 <b>动机 → 手段 → 量化收益</b>，并且能落到 <b>具体代码模块</b>（如 <code>queryLoop.ts</code>、<code>snip.ts</code>、<code>compact.ts</code>、<code>interactionChecks.ts</code>）。<b>两条主线对齐简历：</b>① 上下文管理（提效）② 质量反思闭环（提质），外加一条可量化评估体系，最终落到 <b>生成时长 8→5 分钟（-38%）、缺陷率 29.5%→17.1%（-42%）</b> 等硬指标。<b>阅读顺序已按「核心工作点 → 可量化评估 → 通用八股」重排</b>：1-4 是你亲手做的核心工作（重点讲），5 是可量化评估体系（支撑「数据驱动」叙事），6 是通用原理（放最后，备用）。<b>点击问题可折叠/展开答案。</b>
+</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<!-- ==================== 0. 项目总览 ==================== -->
+<div class="section" id="part0">
+  <h2>项目介绍</h2>
+  <div class="qa">
+    <div class="q">项目介绍</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>我想让<b>大模型代替程序员</b>，你说一句「帮我做个待办清单 App」，它就能自己写代码、自己检查、把能用的成品交给你。但这个「自动写代码的机器人」一开始干得<b>又慢又差</b>——慢是因为它要来回传话、重复劳动；差是因为它写出的代码能编译，但<b>打开页面却是空白的、按钮点了没反应</b>。</p>
+        <p>我的工作就是帮这个机器人<b>变快</b>（少做无用功）和<b>变好</b>（真能跑起来再用）。</p>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <p>这是一个以代码生成 Agent 落地为背景的课题，覆盖「澄清 → 规划 → 写代码 → 构建 → 部署」全流程，核心围绕两件事：<b>对大模型提效</b>和<b>提质</b>。</p>
+        <ul>
+          <li><b>原始架构</b>：主 Agent 派发任务，子 Agent 各司其职，分别负责<b>规划</b>（planner）、<b>编码</b>（coder）、<b>验证</b>（verifier）。</li>
+          <li><b>问题</b>：效率上存在<b>跨 Agent 上下文丢失</b>、<b>子 Agent 重复探索项目</b>等损耗；质量上存在<b>编译通过但运行时异常</b>（白屏、布局塌缩、按钮没反应）。</li>
+          <li><b>解决方案</b>：提效上重构为<b>单主 Agent + 按需子代理</b>并做<b>三级上下文压缩</b>；提质上加<b>「构建校验 → 渲染断言 → 交互回归 → 修复验证」质检闭环</b>，以结构化缺陷诊断驱动定向修复、硬性恢复判定拦截假交付。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">① 如何发现问题？你做了哪些尝试？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>就像给一辆新车做<b>「测速 + 装行车记录仪」</b>：先定好标准（能不能按时到、会不会出事故），再记录它一路干了什么。我让 Agent 做一批任务（比如生成待办清单 App），给它<b>打分</b>，再<b>回放它每一步</b>，问题就自己暴露了：</p>
+        <ul>
+          <li><b>慢的原因</b>：负责"规划"的 Agent 想好了方案，负责"写代码"的 Agent <b>却看不到这个方案</b>，只能自己从头把项目目录摸一遍（重复劳动）；几个 Agent 之间传话还容易<b>传丢信息</b>。</li>
+          <li><b>差的原因</b>：很多代码能"编译通过"，但<b>打开页面是空白、按钮点了没反应</b>——说明光检查"能不能编译"根本不够。</li>
+          <li><b>还有一个坑</b>：Agent 有时会<b>嘴上说"修好了"</b>，但回放记录里它<b>根本没动手</b>。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <p>发现问题靠的是<b>「可量化评估 + 可观测日志」双管齐下</b>，让数据替我暴露瓶颈：</p>
+        <ul>
+          <li><b>① 量化评测</b>：与业务共同设计 <b>20+ 端到端场景用例</b>，分 L1~L4 四档难度（L1 单页工具 → L4 迭代修改），记录 <b>生成时长、一次构建通过率、需求达成率、缺陷率、修复成功率</b> 5 个指标，让「好坏」变成可对比的数字。</li>
+          <li><b>② 可观测日志</b>：每轮工具调用打一行 <code>[AGENT_SUMMARY]</code>（exit 原因 / turns / 耗时 / token 进出），记录 18 种事件（tool_call / compact / subagent_spawn / recovery_attempt 等），可回放整条调用链。</li>
+          <li><b>③ 用数据定位瓶颈</b>：
+            <ul>
+              <li><b>效率侧</b>——通过<b>全链路调用链与耗时剖析</b>定位到多级委托的<b>三大瓶颈</b>：<b>跨 Agent 上下文丢失</b>（方案序列化传递被截断）、<b>子 Agent 重复探索</b>（各自从零 ListDir/Glob）、<b>token 预算撞墙</b>（上下文叠加触发输出截断）。</li>
+              <li><b>质量侧</b>——统计发现大量用例「<b>编译通过但运行时异常</b>」，证明只校验编译存在<b>检测盲区</b>。</li>
+              <li><b>失真交付</b>——审计 transcript 时发现「回复宣称已修复但无对应 tool_use」的假交付。</li>
+            </ul>
+          </li>
+        </ul>
+        <p><b>关键点</b>：靠「量化指标 + 调用链日志」暴露，而非凭感觉——这是简历「数据驱动的架构决策」的依据。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">② 针对问题你如何具体优化？为什么这么做？最终效果如何？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <h4>为什么这么改</h4>
+        <ul>
+          <li><b>让它别传话</b>：原来好几个 Agent 互相传话，容易传丢。改成<b>一个人从头干到尾</b>，最多偶尔找个帮手，就不丢信息了。</li>
+          <li><b>让它别记太多</b>：任务越长记录越多，塞给机器又慢又贵。改成<b>只留关键信息，旧的无用记录先收起来</b>。</li>
+          <li><b>真刀真枪验收</b>：原来只检查"能不能编译"，等于只看"语法对不对"。改成<b>真的把页面打开、点一点按钮</b>，看它能不能用。</li>
+          <li><b>不许靠嘴过关</b>：原来它会说"修好了"但没动手。改成<b>用验证结果当证据</b>，没证据就得真去修。</li>
+        </ul>
+        <h4>具体怎么做 + 效果</h4>
+        <ul>
+          <li><b>提效</b>：让主 Agent 自己拿着全部信息干活；对无用旧记录做三层"收纳"，先扔旧的、再压缩成一句话、最后才让机器做摘要。→ <b>做个 App 从 8 分钟降到 5 分钟（快 38%）</b>。</li>
+          <li><b>提质</b>：构建通过后，用<b>自动浏览器</b>打开页面，检查是否空白、布局是否塌、按钮点了有没有反应；发现毛病就<b>带着截图和定位告诉它哪错了</b>，修完再复检；若它又想"光说不做"，就强制它真动手。→ <b>出错的比率从 29.5% 降到 17.1%（少 42%）</b>。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <h4>一、为什么这样做（动机 / 设计取舍）</h4>
+        <ul>
+          <li><b>提效 · 架构</b>：多级委托痛点是<b>上下文在传递环节丢失</b>、子 Agent <b>重复探索</b>、上下文<b>叠加撞预算</b>。原则——<b>上下文由单点自持</b>，委派层级越深损耗越大，故收敛为主 Agent 自干大部分活。</li>
+          <li><b>提效 · 上下文管理</b>：原则——<b>能规则解决的不调 LLM</b>，压缩<b>按成本递增</b>，仅在必要时升级到 LLM 摘要，短对话零额外开销。</li>
+          <li><b>提质 · 质量闭环</b>：只校验编译有<b>检测盲区</b>。原则——用<b>真实渲染环境</b>做运行时断言，暴露 DOM 挂载 / 布局塌缩 / 事件绑定类问题。</li>
+          <li><b>提质 · 诊断与恢复</b>：盲目重试既烧 token 又可能改坏别处，且模型易「<b>嘴上说修好</b>」。原则——给<b>精确到根因</b>的指引，并用<b>客观验证器</b>作最终判定。</li>
+        </ul>
+        <h4>二、具体如何优化（手段）</h4>
+        <ul>
+          <li><b>提效 · 架构重构</b>：<b>多级委托 → 单主 Agent + 按需子代理</b>，主 Agent 自持完整上下文完成规划+写码+验证；子代理<b>降级为工具</b>，仅保留隔离/并行子任务（<code>task</code>/<code>explore</code>），<b>禁止递归派生</b>、写任务强制串行。</li>
+          <li><b>提效 · 三级上下文压缩</b>：<b>Snip 历史裁剪</b>（对齐 tool_use/tool_result 配对，避免 API 400）→ <b>Microcompact 零成本摘要</b>（纯规则压一句话）→ <b>AutoCompact LLM 摘要</b>（长会话超阈值才触发，带熔断），并统一 token 预算。</li>
+          <li><b>提质 · 质量反思闭环</b>：<b>「构建校验 → 渲染断言 → 交互回归 → 修复验证」</b>四步，用 Playwright 真实浏览器做运行时断言，修复后重跑套件确认缺陷真消除。</li>
+          <li><b>提质 · 结构化诊断 + 硬性恢复</b>：缺陷输出 <code>{ severity, code, message, fixHint }</code>（如 <code>BLANK_BOARD_GRID</code> + 根因提示 + 截图）驱动<b>定向修复</b>；对「无 tool_use 却宣称修复」的<b>假交付</b>用<b>硬性恢复判定</b>强制真调工具，最多 3 轮。</li>
+        </ul>
+        <h4>三、最终效果</h4>
+        <ul>
+          <li><b>效率</b>：生成时长 <span class="num">8 → 5 分钟（-38%）</span>。</li>
+          <li><b>质量</b>：一次构建通过率 84.4% → 88.6%（L1-L3），<b>缺陷率 29.5% → 17.1%（-42%）</b>，需求达成率 96.4%；L4 迭代修改均一次构建通过、1 轮对话完成。</li>
+          <li><b>串讲</b>：提效靠「架构重构 + 成本递增压缩」，提质靠「真实浏览器验证 + 结构化诊断 + 硬性恢复」，落到「生成快、缺陷少」。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 1. 技术架构详解 ==================== -->
+<div class="section" id="part1">
+  <h2>一、技术架构详解</h2>
+
+  <div class="qa">
+    <div class="q">查询循环（Query Loop）的完整流程是什么？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>可以把它想成「<b>机器人边思考边动手的工作循环</b>」：</p>
+        <ul>
+          <li>拿到你的需求后，它会<b>想想</b>、然后<b>动手干活</b>（比如打开文件、运行命令），拿到结果后<b>再想想</b>、<b>再动手</b>，如此循环，直到它觉得干完了。</li>
+          <li>它每次动手前，会先把「太旧的记录」整理一下（<b>清理历史</b>），免得自己记太多变笨。</li>
+          <li>如果它干着干着突然说「我干完了」，但<b>没有实际动手证据</b>，系统会把它拦回来继续干，防止它偷懒。</li>
+          <li>为了防止死循环，它最多会循环一定次数（默认 60 轮），超了就停下来。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <p>这是引擎心脏（<code>queryLoop.ts</code>），一个 <b>while 循环 + 显式状态机</b>的异步生成器：</p>
+        <div class="flow">用户消息
+  → ① 上下文预处理：snip(裁剪) → microcompact(微压缩) → sanitizeToolPairing(配对修复) → autocompact(自动摘要)
+  → ② 构建 system prompt + 消息 + 工具定义，流式调用 LLM
+  → ③ 解析响应：text / reasoning / tool_use
+  → ④ 有 tool_use？→ 并行执行工具(StreamingToolExecutor) → 结果进历史 → 回到 ①
+           └ 无 tool_use → 判断是否要"恢复"(防假交付) → 终止</div>
+        <ul>
+          <li><b>终止条件</b>：LLM 返回 <code>end_turn</code>、达到最大轮次（默认 <span class="num">60</span>）、用户中止、错误。</li>
+          <li><b>状态机</b>：用 <code>TransitionReason</code> 枚举追踪状态转换（<code>next_turn</code>/<code>max_output_tokens_escalate</code>/<code>no_tool_call_recovery</code>/<code>compact_retry</code> 等），每种转换独立重试上限，避免死循环。</li>
+          <li><b>checkpoint</b>：每轮工具后把完整 messages 序列化到 <code>agent_working_set</code>，崩溃/断流可恢复完整轨迹。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+<!-- ==================== 2. 上下文管理 ==================== -->
+<div class="section" id="part2">
+  <h2>二、上下文管理（提效主线）</h2>
+
+  <div class="qa">
+    <div class="q">三级上下文压缩具体是哪三级？每级的触发条件与实现？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>像「<b>整理一个越写越长的笔记本</b>」，分三级由浅入深：</p>
+        <ul>
+          <li><b>第一级：扔旧页</b>——最前面的旧记录没用了，直接扔掉，只留最近一截。</li>
+          <li><b>第二级：写摘要</b>——有些记录太长，用一句话概括它干了什么（比如"读了个 200 行的文件"），不花钱、不影响理解。</li>
+          <li><b>第三级：请助手重写</b>——笔记本实在太厚，就让机器（LLM）把整本内容浓缩成一份要点总结，再继续干活。</li>
+        </ul>
+        <p>从"扔"到"请助手"，越来越费力气，所以<b>只在必要时才用更高级的那级</b>，大多数时候靠前两级就够了，省钱又省时间。</p>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>第一级 · Snip 历史裁剪</b>（<code>snip.ts</code>）：token 超过 <code>autocompact 阈值 × 70%</code> 时裁掉最旧段、保留最近 25% 窗口 tail。<b>难点是 tool_use/tool_result 配对完整性</b>——API 要求每个 tool_use 必有对应 tool_result，否则 400。用 <code>sanitizeToolPairing</code>：收集 tool_use id → 剔除孤儿 tool_result → 未应答 tool_use 追加占位；并<b>对齐到安全边界</b>（普通 user 轮次）避免后缀以孤儿 tool_result 开头。</li>
+          <li><b>第二级 · Microcompact 微压缩</b>（<code>compact.ts</code>）：<b>零 LLM 成本</b>的工具结果摘要，把超过 6 轮、超 200 字符的旧工具结果替换成一句话（如 <code>[FileRead: src/App.tsx (200 lines) — content compacted]</code>），不丢语义、不调 API。</li>
+          <li><b>第三级 · AutoCompact 自动摘要</b>（<code>compact.ts</code>）：<b>长会话阈值降维</b>，token 超 <code>窗口 - 13k buffer</code> 时调 LLM 压成结构化摘要（Task/Actions/Files/Decisions/Errors/Current State），再<b>重注入</b>工作目录、最近编辑文件、最新用户请求（<code>withPostCompactReinjection</code>）；带<b>熔断</b>——连续 3 次失败不再重试。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">除了压缩，还有哪些 token 控制手段？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>给"读数"设上限</b>：工具读出来的大段内容，先记个上限，太长的就截掉头尾、放个链接指向完整文件，避免撑爆记忆。</li>
+          <li><b>给"写答案"兜底</b>：如果机器写太长写到一半被掐断，系统会<b>自动让它从断的地方继续</b>，而不是从头再写一遍（防止它傻傻地重写一样的大段文字又卡住）。</li>
+          <li><b>紧急抢救</b>：万一系统报"记忆装不下了"，立即触发一次整理（压缩），成功后再接着干。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>工具结果预算（applyToolResultBudget）</b>：工具结果<b>进历史前</b>按类别设上限（Grep/FileRead ≤20k、Bash ≤30k、Agent ≤50k），超限「留头留尾」截断，大结果溢写到磁盘 <code>.spark/tool-results/</code> 并附路径。</li>
+          <li><b>统一 token 预算</b>：主 Agent 与 task 子代理共用同一预算（早期 8192 上限曾致子代理写大文件中途撞墙、烧 180s 返回 0 块，已修正）。</li>
+          <li><b>max_output_tokens 截断恢复</b>：输出截断时——Stage1 静默升级 max_tokens 并注入「从断点继续，不要重复」；Stage2 注入恢复消息强制续写、建议拆小文件。避免「重复生成大输出又被截断」死循环。</li>
+          <li><b>上下文溢出紧急恢复</b>：API 报 <code>prompt is too long</code> 时立即紧急 compact，成功后用压缩消息重试。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么上下文管理对 LLM 应用这么重要？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>更贵</b>：记的东西越多，机器思考和出结果就越慢、越费钱。</li>
+          <li><b>更笨</b>：信息太多时，机器会<b>"丢三落四"</b>——尤其容易忽略中间那部分内容，关键信息被淹没。</li>
+          <li><b>更易翻车</b>：超过它"记性"的上限，任务会直接失败。</li>
+        </ul>
+        <p>所以要在<b>不丢关键信息的前提下少记</b>——这正是三级压缩的意义，短对话几乎不花额外成本。</p>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>成本</b>：token 越多，推理成本越高、首包越慢（每轮 prefill 都要重算）。</li>
+          <li><b>质量</b>：上下文过长会「<b>丢失在中间（Lost in the Middle）</b>」——模型对长文本中段信息利用不充分，关键信息被淹没。</li>
+          <li><b>稳定性</b>：超过窗口被截断，任务中途失败。</li>
+          <li>故须「<b>在信息不丢失的前提下压缩上下文</b>」——三级压缩（历史裁剪 → 工具结果零成本摘要 → 长会话阈值降维）成本递增、仅在必要时升级到 LLM 摘要（短对话零额外 LLM 调用），并<b>统一 token 预算</b>，对应简历「三级上下文压缩」。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== 3. 质量保障闭环 ==================== -->
+<div class="section" id="part3">
+  <h2>三、质量反思闭环（提质主线）</h2>
+
+  <div class="qa">
+    <div class="q">「编译通过但运行时异常」是什么问题？你的闭环怎么治？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>相当于「<b>作文语法都对，但读起来根本不通</b>」。原来只检查代码"能不能编译"，就像只检查"句子语法没错"，但页面打开却<b>是空的、按钮没反应</b>——这些只有<b>真正打开页面用一下</b>才能发现。</p>
+        <p>我的办法是加一道「<b>模拟真人验收</b>」流水线：</p>
+        <ul>
+          <li><b>先编译</b>：确认代码能跑起来、依赖能装上。</li>
+          <li><b>再打开页面看</b>：用<b>自动浏览器</b>把页面打开，看有没有报错、首屏是不是空的。</li>
+          <li><b>再点一点</b>：检查布局有没有塌、按钮点了有没有反应。</li>
+          <li><b>修完再验</b>：发现毛病让它改，改完<b>重跑一遍</b>，确认真修好了，而不是越修越坏。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>问题本质</b>：传统只校验「能不能编译」，是<b>检测盲区</b>——编译通过 ≠ 功能正确。LLM 按概率生成 token，能写出「语法正确」代码，却不一定理解「运行时状态、DOM 挂载、事件绑定」等仅在真实环境暴露的问题，故出现首屏空白、布局塌缩、按钮没反应。</li>
+          <li><b>反思闭环（RunVerificationSuite）</b>：<b>构建校验 → 渲染断言 → 交互回归 → 修复验证</b>，每步补前一步盲区。</li>
+        </ul>
+        <div class="flow">构建校验(bun install, 失败 fallback npm → bun run build)
+→ 渲染断言(Playwright 监听 console/pageerror/请求失败/4xx，验证首屏与布局)
+→ 交互回归(首屏完整性/布局塌缩/空按钮/点击反应 + 截图)
+→ 修复验证(重跑验证套件确认缺陷消除)</div>
+        <ul>
+          <li>① <b>构建校验</b>：基础门槛，保证能编译、依赖能装，是入口不是终点。</li>
+          <li>② <b>渲染断言</b>：把「能编译」推进到「能跑起来」，用真实浏览器监听 <code>console</code>/<code>pageerror</code>/请求失败/4xx。</li>
+          <li>③ <b>交互回归</b>：验证「能用」，渲染后 <code>page.evaluate</code> 做四项断言。</li>
+          <li>④ <b>修复验证</b>：修复后<b>重跑套件</b>确认缺陷真消除，而非修一个坏一个。</li>
+          <li>输出<b>结构化缺陷诊断</b>（缺陷码 + 修复提示 + 截图）回传 Agent 驱动<b>定向重生成</b>，并以<b>硬性恢复判定</b>（verdict:FAIL 强制重试）拦截失真交付。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">交互回归（interactionChecks）具体检查什么？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>页面打开后，用<b>自动浏览器替真人"看一眼 + 点一下"</b>，主要查四个毛病：</p>
+        <ul>
+          <li><b>有没有内容</b>：整个页面空空如也、一个字都没有 → 说明组件没挂载上。</li>
+          <li><b>布局有没有塌</b>：像扫雷这种九宫格界面，格子全挤成一团 → 布局样式写坏了。</li>
+          <li><b>按钮是不是空的</b>：一屏按钮全是空白、点也白点 → 数据算了但没显示出来。</li>
+          <li><b>点了有没有反应</b>：点最显眼的按钮，页面一点变化都没有 → 点击逻辑没接上。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li>用真实浏览器（Playwright headless）在渲染后执行 <code>page.evaluate</code>，做四项断言：</li>
+          <li>① <b>首屏完整性</b>：<code>BLANK_FIRST_SCREEN</code>——正文无可见文本 → 根节点没挂载/容器塌缩。</li>
+          <li>② <b>布局塌缩</b>：<code>BLANK_BOARD_GRID</code>——grid 有面积但子元素 &lt;20% → grid-template 塌缩（九宫格/扫雷类典型 bug）。</li>
+          <li>③ <b>空按钮</b>：<code>EMPTY_BUTTON_CONTENT</code>——≥80% 按钮空文本且 ≥20 个 → 内容变量算了但没渲染进 JSX。</li>
+          <li>④ <b>点击反应</b>：<code>CLICK_NO_REACTION</code>——点最显眼按钮后页面文本长度无变化 → click handler 没接状态。空白屏/无交互元素是<b>硬 FAIL</b>，点击无反应是 <b>warning</b>（避免误伤静态页）。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">什么是「失真交付」？为什么 LLM 会这样？你怎么防？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>就是机器<b>嘴上说"修好了"，其实根本没动手</b>。它可能真以为自己做了，也可能是想讨好你随便应一句。</p>
+        <p>我用<b>两道保险</b>来防：</p>
+        <ul>
+          <li><b>看它有没有动手</b>：如果它说"修好了"但<b>记录里找不到它真的去改代码/运行的痕迹</b>，就把它拦回来，强制它真干。</li>
+          <li><b>看验证结果</b>：如果不通过自动验收，就要求它<b>必须真的去改、再重新验收</b>，不许光用文字糊弄。</li>
+        </ul>
+        <p>核心一句话：<b>以客观验证结果为准，不轻信机器自己说的</b>。</p>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>失真交付</b>：模型回复「已修复/已完成」但<b>实际没调用工具</b>，属幻觉或「讨好式」输出。</li>
+          <li><b>原因</b>：LLM 按概率生成文本，可能「以为」自己做了。</li>
+          <li><b>双重防范</b>（<code>queryLoop.ts</code>）：</li>
+          <li>① <b>伪造执行检测（shouldRecoverFromMissingToolCalls）</b>：本轮无 tool_use 但回复含「已构建/已修复/已安装」宣称或假工具标记（<code>&lt;function_calls&gt;</code>）→ 注入 <code>SYSTEM NOTICE</code> 强制真正调工具，最多重试 2 次。</li>
+          <li>② <b>验证失败强制修复</b>：<code>RunVerificationSuite</code> 返回 <code>verdict:"FAIL"</code> 时注入指令「必须调真实工具修复根因并重新验证，不许用文字宣称完成」，否则强制重试。这是「编译通过但运行时异常」下<b>最主要失效模式</b>。</li>
+          <li><b>核心思想</b>：用<b>客观验证器</b>（真实浏览器断言）作最终判定，不信模型宣称。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">「结构化缺陷诊断」是怎么设计的？「硬性恢复判定」又是什么？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <p>这就像<b>医生开诊断单，而不是只说"你有病"</b>：</p>
+        <ul>
+          <li><b>结构化诊断</b>：出问题时，不只是说"错了"，而是说清<b>是什么毛病、错在哪、怎么修</b>（比如"布局塌了，去检查九宫格的排列参数"），还附上页面截图让它亲眼看。</li>
+          <li><b>为什么</b>：让机器<b>知道错在哪、按提示定向修</b>，而不是瞎猜重来——瞎重试既费钱又可能把好的地方改坏。</li>
+          <li><b>硬性恢复</b>：万一它又想"光说不做"，就强制它<b>必须真的去改、再重新验收</b>，最多给 3 次机会。</li>
+          <li><b>关系</b>：一个负责"告诉它哪错、怎么修"（软），一个负责"逼它真的去修"（硬），一软一硬把质量兜住。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>结构化缺陷诊断</b>：发现问题后输出 <code>{ severity, code, message, fixHint }</code>。例如 <code>code:"BLANK_BOARD_GRID"</code> + <code>fixHint:"检查 grid-template-columns/grid-auto-rows，避免依赖未解析 CSS 变量"</code>，附截图路径。</li>
+          <li><b>为什么这样设计</b>：缺陷码让 LLM <b>精确对号入座</b>，fixHint <b>指向根因</b>，截图让它「看到」渲染结果——目的是<b>定向修复</b>而非盲目重试（盲目重试烧 token 且可能改坏别处）。</li>
+          <li><b>硬性恢复判定</b>：<code>RunVerificationSuite</code> 返回 <code>verdict:"FAIL"</code> 时强制注入「必须调真实工具修复根因并重新验证，不许用文字宣称完成」，否则强制重试，最多 3 轮修复循环。</li>
+          <li><b>两者关系</b>：结构化诊断「告诉哪里错、怎么修」，硬性恢复「逼真的去修、不许嘴上糊弄」，一软一硬兜底质量。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 4. 项目问题（基于简历） ==================== -->
+<div class="section" id="part4">
+  <h2>四、项目问题（从简历出发，面试官会深挖的）</h2>
+
+  <div class="qa">
+    <div class="q">简历说「跨 Agent 上下文丢失」，具体丢在哪里？你当时怎么发现的？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>丢在哪</b>：就像<b>项目经理写好方案，交给别人去做，但交接时方案"被精简丢了"</b>。负责规划的人想好了文件、接口，转交给写代码的人时，这些信息在传递中被截断，写代码的人拿不到完整方案，只能自己重新摸索项目。</li>
+          <li><b>怎么发现</b>：看运行记录，发现写代码的人<b>反复去翻目录、查文件</b>（这些本该是方案里已有的），明显是在重复劳动。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>丢在哪</b>：主 Agent 的方案需序列化塞进子 Agent（planner/coder/verifier）prompt，方案里的文件路径、接口契约、技术决策在传递时被截断/摘要，子 Agent 拿不到完整上下文就<b>重新探索脚手架</b>、做出与规划不一致的实现。</li>
+          <li><b>怎么发现</b>：通过 <code>[AGENT_SUMMARY]</code> 日志 + transcript 审计，看到子 Agent 大量重复 <code>ListDir</code>/<code>Glob</code>，以及主 + 各子 Agent 输入 token 叠加撞预算。</li>
+          <li><b>结论</b>：委派层级越深，上下文传递损耗越大。单主 Agent 让上下文「单点持有」，消除传递环节。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">改成单主 Agent 后，什么情况下还会用子代理？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li>只在<b>"分工互不干扰、能各自独立完成"</b>时才用帮手：① 几个不相干的文件要同时写，可以分头并行写；② 需要单独只读地调查/审查代码时。</li>
+          <li>原则是<b>尽量少用</b>——主 Agent 自己就是主力，帮手只是"临时工具"，而且帮手<b>不能再去招帮手</b>（禁止递归）。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li>只在「<b>真正隔离、可自包含</b>」的子任务用：① 互不相干文件的并行编写；② 需要独立上下文的只读调查/代码审查（<code>explore</code>）。</li>
+          <li>原则「<b>rarely</b>」——主 Agent 是主要实现者，自己规划+写码+验证；子代理只是「隔离/并行」工具，且<b>禁止递归</b>。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">简历说「工具结果零成本摘要」，为什么强调「零成本」？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li>因为让机器（LLM）做摘要，等于<b>额外再花钱请一次"人工"</b>，既费钱又变慢。而我的"零成本摘要"是<b>用固定套路直接压缩</b>（比如把"读了个 200 行的文件"浓缩成一句话），<b>不请机器、不花钱、也不慢</b>。</li>
+          <li>这也体现一个原则：<b>能简单解决的绝不动用大模型</b>，只有内容实在太多时才让它出马。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li>用 LLM 摘要需<b>额外一次 API 调用</b>，花 token 又加延迟。Microcompact 的「零成本摘要」是<b>纯规则</b>（按工具类型拼固定模板），不调 LLM、不丢语义、不增延迟。</li>
+          <li>体现分层思想：<b>能规则解决的绝不调 LLM</b>，仅长会话才触发 AutoCompact（LLM 摘要），短对话全程零额外 LLM 开销。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">为什么一次构建通过率只从 84.4% 提到 88.6%，而缺陷率降幅更大（-42%）？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li>因为这两个数字<b>量的是不同的事</b>："一次构建通过率"只看<b>代码能不能一次编译过</b>（偏语法问题，本来就不容易错，提升空间小）；"缺陷率"看的是<b>跑起来能不能用</b>（渲染、交互这种难问题，原来毛病多，改进空间大）。</li>
+          <li>我的重心放在"<b>能跑能用</b>"这种更难的问题上，所以缺陷率降得最明显。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li>两者度量<b>不同维度</b>：<b>一次构建通过率</b>是「编译能否一次过」（偏语法/依赖，基线高、空间小）；<b>缺陷率</b>是「运行时功能缺陷」（组件渲染、交互更难，基线差、空间大）。</li>
+          <li>质量闭环重点攻<b>运行时缺陷</b>（编译过但跑不起来），故缺陷率改善最明显——印证「编译通过」≠「功能正确」。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">如果让你重新设计，有哪些可以改进的点？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>让帮手能并行干</b>：现在多个帮手共用同一个工作区，怕互相覆盖所以只能排队。将来可以给每个帮手<b>一个独立的工作副本</b>，互不干扰就能同时干了。</li>
+          <li><b>更强的安全隔离</b>：现在靠"规则检查"防危险命令，对外部用户最好升级成<b>沙箱隔离</b>，把危险操作彻底关在笼子里。</li>
+          <li><b>更聪明的验收</b>：现在靠文字长度、面积这种"经验判断"，以后可以<b>用 AI 看图</b>，像真人一样看出界面好不好看、对不对。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>子代理文件隔离</b>：当前共享同一 workspace，写任务被迫串行。可像 claude-code 给每个子代理独立 git worktree，写任务也能安全并行。</li>
+          <li><b>容器级隔离</b>：当前 Bash 安全是「白名单+黑名单」进程级检测，对外部用户场景应升级为容器/sandbox 隔离。</li>
+          <li><b>缺陷诊断自动化</b>：交互回归目前是启发式（文本长度/面积），可引入截图 + 视觉模型做更智能 UI 断言。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 5. 可量化评估体系 ==================== -->
+<div class="section" id="part5">
+  <h2>五、可量化评估体系</h2>
+
+  <div class="qa">
+    <div class="q">你怎么设计可量化测试体系的？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>准备一批考题</b>：和业务一起设计了 <b>20+ 道</b>真实场景题，从简单到难分 4 档（L1 单个小工具 → L4 在已有应用上改需求）。</li>
+          <li><b>定好评分标准</b>：每道题都量几个数字——<b>做得快不快、一次能不能编译过、能不能满足需求、出错的比率、错了能不能自己修好</b>。</li>
+          <li><b>用分数说话</b>：所有优化前后都用同一套题打分，哪个指标差了就去修哪里，形成"<b>评测 → 定位 → 修复</b>"的循环。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>20+ 业务场景端到端用例</b>（与业务共同设计），分四档难度：L1 单页工具（8）、L2 列表/CRUD（7）、L3 全栈系统（5）、L4 迭代修改（4），建立分层验收标准。</li>
+          <li><b>核心度量指标</b>：生成时长、一次构建通过率、需求达成率、缺陷率、修复成功率，贯穿优化前后量化追踪，为架构决策提供数据归因，支撑「评测 → 定位 → 修复」迭代。</li>
+          <li><b>分层结果</b>：L1-L3 一次构建通过率 88.6%、缺陷率 17.1%、需求达成率 96.4%；L4 迭代修改均一次构建通过、1 轮对话完成（验证二次修改与上下文复用）。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== 6. 通用八股 ==================== -->
+<div class="section" id="part6">
+  <h2>六、通用八股（通用原理，结合项目答）</h2>
+
+  <div class="qa">
+    <div class="q">什么是 Agent？它和普通 LLM 调用有什么区别？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>普通调用</b>：你问一句，它答一句，回答完就完事，<b>不能自己动手做事</b>。</li>
+          <li><b>Agent</b>：除了会说话，还给你装了<b>"手"和"记忆"</b>——它能<b>自己查资料、改文件、跑命令</b>，做完一步看结果，再决定下一步，直到把整件事干完。</li>
+          <li>就像从"一个只会出主意的顾问"变成"一个能独立完成任务的员工"。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>普通 LLM 调用</b>：一问一答，输入 prompt 输出文本，无外部交互。</li>
+          <li><b>Agent</b>：让 LLM 具备「<b>感知 → 规划 → 行动</b>」能力，能<b>调用工具</b>、观察结果、再决策，形成自主循环完成复杂目标。</li>
+          <li>核心三要素：<b>模型（大脑）+ 工具（手）+ 记忆（上下文）</b>。CodeForge 把「写一个 CRUD 应用」拆成多轮工具调用（写文件 → 构建 → 验证 → 修复）。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">什么是 ReAct 范式？为什么适合做 Agent？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>ReAct = 边想边做</b>：先想一想（该干嘛），再动一下手（去执行），看结果再想、再做……直到做完。</li>
+          <li>对比"光想不做"和"光做不想"，它<b>边做边根据反馈修正</b>，特别适合要查资料、跑代码这种需要动手的任务。</li>
+          <li>我的引擎就是这样：机器说"我要调某工具" → 执行 → 把结果喂回去 → 它再思考下一步。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>ReAct = Reasoning + Acting</b>：推理与行动交替。模型先 Thought，再决定调哪个工具（Action），拿到 Observation，继续思考，直到得出结论。</li>
+          <li>对比纯 CoT（只推理不行动）和纯 Act（只行动不推理），ReAct 让模型<b>边想边做、根据环境反馈修正</b>，适合查资料、执行代码、多步操作任务。</li>
+          <li>CodeForge 查询循环就是 ReAct 工程实现：LLM 输出 tool_use（Action）→ 执行（Observation）→ 注入结果（下一轮 Reasoning）。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">短期记忆和长期记忆有什么区别？怎么实现？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>短期记忆</b>：就像<b>这次对话里的"当下记忆"</b>，内容都在手里，但容量有限、关掉就没了。</li>
+          <li><b>长期记忆</b>：像<b>记到小本本里</b>，下次还能翻出来用（比如存到数据库，需要时再调出来）。</li>
+          <li>我的项目主要管的是<b>短期记忆</b>——怎么在有限容量里装下更多有用的（三级压缩），并能断线恢复。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>短期记忆</b>：当前会话上下文窗口内历史，直接拼进 prompt，受窗口限制。</li>
+          <li><b>长期记忆</b>：跨会话持久化，通常用向量数据库存历史/知识，需要时检索注入。</li>
+          <li>常见手段：<b>摘要记忆</b>（历史压摘要，对应 AutoCompact）、<b>向量记忆</b>（嵌入后检索）、<b>知识库</b>（结构化存储）。我的 Working Set 持久化 + 三级压缩属于<b>短期记忆管理</b>；「持久化摘要」跨会话复用接近长期记忆。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">LangChain 和 LangGraph 是什么？StateGraph 是什么？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>LangChain</b>：一个"搭积木"框架，把模型、工具、记忆拼成一条<b>顺序执行的链</b>。</li>
+          <li><b>LangGraph</b>：更灵活的"流程图"，用<b>图</b>来表达节点和跳转，支持<b>循环、回退、条件分支</b>，适合复杂任务。</li>
+          <li><b>StateGraph</b>：LangGraph 的核心，用一份<b>共享的"记录本"</b>贯穿各个节点，大家都能读能写、按流程流转。</li>
+          <li>我的引擎是自己写的状态机，但思想和它一致——用一个贯穿循环的"共享状态"。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>LangChain</b>：大模型应用开发框架，把 prompt、模型、工具、记忆封装成链（Chain）。</li>
+          <li><b>LangGraph</b>：<b>有状态、有循环</b>的 Agent 编排库，用<b>图</b>描述节点和边，支持循环、条件分支、人工介入，比线性 Chain 更适合复杂 Agent。</li>
+          <li><b>StateGraph</b>：LangGraph 核心抽象，用<b>共享状态（State）</b>贯穿节点，节点读/写状态、边定义流转，适合「多步、可回退、可循环」工作流。</li>
+          <li><b>联系项目</b>：CodeForge 是自研 queryLoop 状态机，但「共享状态 + 循环流转」思想与 StateGraph 一致——<code>LoopState</code> 就是贯穿循环的共享状态。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">MCP 协议是什么？和 Function Calling 有什么区别？</div>
+    <div class="a">
+      <div class="ver ver-simple">
+        <span class="ver-tag">💬 通俗版</span>
+        <ul>
+          <li><b>MCP</b>：一个"<b>统一插座标准</b>"（类似 USB-C），让不同模型应用都能用同一套方式接上各种工具和数据源，不用每家单独对接。</li>
+          <li><b>vs Function Calling</b>：Function Calling 是<b>某家模型内部</b>让模型喊"我要调工具"的机制；MCP 是<b>跨模型、跨工具</b>的统一标准，同一个工具能被很多应用复用。</li>
+          <li><b>三个角色</b>：宿主应用（Host）、发起连接的（Client）、提供工具的（Server）。</li>
+          <li>我的内置工具是"直连式"，而我的检索平台项目用 MCP 对接文献库，体现复用价值。</li>
+        </ul>
+      </div>
+      <div class="ver ver-pro">
+        <span class="ver-tag">🎯 专业版</span>
+        <ul>
+          <li><b>MCP（Model Context Protocol）</b>：Anthropic 提出的<b>标准化协议</b>，让模型应用以统一方式连接外部工具/数据源，解决「每个工具单独对接」的碎片化问题，类比 USB-C。</li>
+          <li><b>vs Function Calling</b>：Function Calling 是某模型厂商<b>内部</b>让模型输出工具调用的机制；MCP 是<b>跨模型、跨工具</b>的标准连接协议，一个 MCP Server 可被多个客户端复用。</li>
+          <li>MCP 三角色：<b>Host</b>（宿主应用）、<b>Client</b>（发起连接）、<b>Server</b>（提供工具/资源）。</li>
+          <li><b>联系项目</b>：CodeForge 内置工具是「直连式」Function Calling；另一检索平台项目用 MCP 对接 Semantic Scholar 做论文搜索与引用分析，精读全文时通过它的 <code>externalIds</code> 映射到 arXiv 拉全文，体现标准化复用价值。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  // 1. 把每个 .qa 里的 .q 改造成可点击的问题按钮，并给答案加折叠结构
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+
+    // 默认展开
+    qa.classList.add('open');
+
+    function toggle() {
+      qa.classList.toggle('open');
+    }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'codeforge-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+
+  // 2. 全局展开/折叠
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) {
+      qa.classList.toggle('open', open);
+    });
+  };
+})();
+</script>
+</body>
+</html>

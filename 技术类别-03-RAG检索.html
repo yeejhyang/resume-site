@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八股背诵 · RAG 检索</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --purple: #7c3aed; --purple-bg: #a855f7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif; line-height: 1.7; padding: 32px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  header { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--purple); border-left: 4px solid var(--purple-bg); padding-left: 10px; margin-bottom: 16px; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #d5c3f7; box-shadow: 0 2px 8px rgba(124,58,237,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #f4effe; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--purple-bg); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #ede4fc; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  /* —— 标准答案：直接在原答案上编辑 —— */
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a.fix-editing { border-left-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.12); outline: none; }
+  .a.fix-editing .fix-bar { float: none; display: flex; justify-content: flex-end; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px dashed #d8c7f7; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: var(--purple); }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: var(--purple-bg); background: #fff; box-shadow: 0 0 0 2px rgba(168,85,247,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #d5c3f7; background: #fff; color: #7c3aed; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #7c3aed; color: #fff; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #f4effe; color: #7c3aed; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html" style="display:inline-block; margin-bottom:14px; color:#7c3aed; text-decoration:none; font-size:13px; font-weight:600;">← 返回索引</a>
+<header>
+  <h1>技术类别三 · RAG 检索</h1>
+  <p>对应简历：检索平台的完整 RAG 链路、Milvus/ES/LightRAG/RRF/Rerank</p>
+  <span class="badge">多路召回</span><span class="badge">RRF / Rerank</span><span class="badge">向量 / BM25 / 图谱</span><span class="badge">指标</span>
+</header>
+
+<div class="tip"><b>说明：</b>本文件按技术类别横切 RAG 检索通用八股，聚焦检索核心概念与融合策略。点击问题可折叠/展开答案。</div>
+
+<div class="toolbar">
+  <button onclick="setAll(true)">全部展开</button>
+  <button onclick="setAll(false)">全部折叠</button>
+</div>
+
+<div class="section">
+  <h2>一、RAG 基础</h2>
+  <div class="qa">
+    <div class="q">RAG 是什么？完整链路？为什么需要？</div>
+    <div class="a">
+      <ul>
+        <li>生成前先检索外部知识，拼进 prompt 再生成，获得准确、可溯源、跟得上新知识的回答。</li>
+        <li>链路：文档入库（切块→嵌入）→ 查询理解 → 多路召回 → 融合/重排 → 拼上下文 → 生成 → 溯源。</li>
+        <li>需要原因：LLM 知识有截止、会幻觉、无法访问私有数据。对比微调：RAG 灵活可更新可溯源，微调把知识写进参数。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">为什么要多路召回？</div>
+    <div class="a">
+      <ul>
+        <li>向量：懂语义，但对精确关键词/缩写/数字不敏感；关键词（BM25）：精确匹配强但不懂语义；图谱：多跳关系推理；联网：时效。</li>
+        <li>各通道互补，多路并行 + 融合显著提升召回（实测三路较单路 Recall@10 +12.3%）。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>二、检索技术</h2>
+  <div class="qa">
+    <div class="q">向量检索原理？Embedding？Milvus 索引？</div>
+    <div class="a">
+      <ul>
+        <li>Embedding 把文本映射为高维稠密向量，语义相近距离近。</li>
+        <li>用 ANN 近似最近邻搜索（高维精确太慢）。</li>
+        <li>索引：HNSW（查询快召回高但占内存）、IVF（聚类倒排省内存）、PQ（量化压缩有损省内存）。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">BM25 原理？为什么仍必要？</div>
+    <div class="a">
+      <ul>
+        <li>TF-IDF 改进：词频（饱和）、逆文档频率（惩罚常见词）、文档长度归一化。</li>
+        <li>对专有名词/编号/缩写/精确术语可靠，是语义检索重要补充。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">知识图谱 RAG（GraphRAG/LightRAG）vs 普通 RAG？</div>
+    <div class="a">
+      <ul>
+        <li>普通 RAG 切块按相似度检索，割裂文档关系，无法多跳推理。</li>
+        <li>图谱 RAG 先抽实体关系成图，检索时走图做多跳遍历，回答跨文档关系问题。</li>
+        <li>代价：图谱构建成本高。LightRAG 五种模式（naive/local/global/hybrid/mix）。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>三、融合与排序</h2>
+  <div class="qa">
+    <div class="q">RRF 融合？公式？为什么用？</div>
+    <div class="a">
+      <ul>
+        <li><code>score(d) = Σ 1/(k + rank_i(d))</code>，k 通常 60。</li>
+        <li>优点：用排名而非分数，避免不同通道量纲不可比，无需调权重、鲁棒。</li>
+        <li>缺点：丢原始分数信息。融合后接 Rerank 精排。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">bi-encoder vs cross-encoder？</div>
+    <div class="a">
+      <ul>
+        <li>bi-encoder：query/doc 独立编码算相似度，快、可预存，精度略低，用于召回。</li>
+        <li>cross-encoder：query/doc 拼接交互打分，精度高、慢、无法预存，用于精排。</li>
+        <li>经典：先 bi 召回海量，再 cross 精排少量。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="qa">
+    <div class="q">语义分块策略？指标 Recall@K / MRR / NDCG？</div>
+    <div class="a">
+      <ul>
+        <li>分块：固定长度、按标题/段落、语义分块、父子块。太大信息稀释、太小割裂。</li>
+        <li>Recall@K：前 K 命中相关比例（找回来了吗）。</li>
+        <li>MRR：相关文档位置倒数平均（第一个对的排多靠前）。</li>
+        <li>NDCG：含位置权重 + 相关度分级的排序质量。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    qa.classList.add('open');
+    function toggle() { qa.classList.toggle('open'); }
+    q.addEventListener('click', toggle);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+
+    // —— 答题框：记录我的回答，自动保存到浏览器本地 ——
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'rag-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+
+    // —— 标准答案：直接在原答案基础上编辑，保存到本地 ——
+    var keyA = 'ragent-fix:' + hashKey(qtext);
+    var fixBar = document.createElement('div');
+    fixBar.className = 'fix-bar';
+    fixBar.innerHTML = '<button type="button" class="fix-edit">✏️ 修改标准答案</button>';
+    a.insertBefore(fixBar, a.firstChild);
+
+    var fixEdit = fixBar.querySelector('.fix-edit');
+
+    // 若已有修改记录，直接加载覆盖后的答案
+    var savedFix = null;
+    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
+    if (savedFix) {
+      a.innerHTML = savedFix;
+      a.insertBefore(fixBar, a.firstChild);
+    }
+
+    fixEdit.addEventListener('click', function () {
+      var editing = a.getAttribute('contenteditable') === 'true';
+      if (!editing) {
+        // 进入编辑：就地修改
+        a.setAttribute('contenteditable', 'true');
+        a.classList.add('fix-editing');
+        fixEdit.textContent = '保存修改';
+        a.focus();
+        return;
+      }
+      // 保存：剔除工具条自身后直接覆盖
+      var clone = a.cloneNode(true);
+      var b = clone.querySelector('.fix-bar');
+      if (b) b.parentNode.removeChild(b);
+      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      a.setAttribute('contenteditable', 'false');
+      a.classList.remove('fix-editing');
+      fixEdit.textContent = '✏️ 修改标准答案';
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+})();
+</script>
+</body>
+</html>
