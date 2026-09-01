@@ -71,6 +71,9 @@
   .cat.open > .cat-head .caret { transform: rotate(90deg); color: var(--teal-bg); }
   .cat-head .name { flex: 1; }
   .cat-head .cnt { font-size: 11px; color: var(--muted); font-weight: 500; background: #f1f3f6; padding: 1px 8px; border-radius: 10px; }
+  /* 分类收起时隐藏其下的文件列表，展开时显示 */
+  .cat > ul { display: none; }
+  .cat.open > ul { display: block; }
 
   .file-item {
     display: flex; align-items: center; gap: 6px;
@@ -361,7 +364,8 @@
         fileLi.className = 'file-li';
         var sections = state.cache[fname] && state.cache[fname].sections;
         // 展开状态：完全由用户点击控制（默认收起，点击展开）
-        if (expandedFiles[fname]) fileLi.classList.add('expanded');
+        // 注意：仅当文件已加载且有 section 时才标记 expanded，避免出现"▾箭头但无子项"的错乱状态
+        if (expandedFiles[fname] && sections && sections.length > 0) fileLi.classList.add('expanded');
 
         var fItem = document.createElement('div');
         fItem.className = 'file-item' + (state.currentFile === fname ? ' active' : '');
