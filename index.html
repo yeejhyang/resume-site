@@ -82,6 +82,10 @@
   .file-item.active { background: #eef7f5; color: var(--teal); border-left-color: var(--teal-bg); font-weight: 700; }
   .file-item .fname { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .file-item .fprog { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .file-item .fcaret { flex: none; width: 12px; text-align: center; color: #cbd5e1; font-size: 11px; transition: transform .18s; }
+  .file-li.expanded > .file-item .fcaret { transform: rotate(90deg); color: var(--teal-bg); }
+  .file-li > ul { display: none; }
+  .file-li.expanded > ul { display: block; }
 
   .sec-item {
     display: flex; align-items: flex-start; gap: 8px;
@@ -313,6 +317,7 @@
 
   var mastery = loadJSON(KEY_M, {});
   var expandedCats = loadJSON(KEY_EXPAND, { 'tech': true, 'proj': true, 'interview': true });
+  var expandedFiles = {}; // 文件项的 section 子列表展开状态（内存态）
 
   function qkey(file, qtext) { return file + '::' + qtext; }
   function toastMsg(msg) {
@@ -353,19 +358,30 @@
         var fileTotal = fileTotalQ(fname);
 
         var fileLi = document.createElement('li');
+        fileLi.className = 'file-li';
+        var sections = state.cache[fname] && state.cache[fname].sections;
+        // 展开状态：完全由用户点击控制（默认收起，点击展开）
+        if (expandedFiles[fname]) fileLi.classList.add('expanded');
+
         var fItem = document.createElement('div');
         fItem.className = 'file-item' + (state.currentFile === fname ? ' active' : '');
         var pct = fileTotal ? Math.round(fileMarked / fileTotal * 100) : 0;
         fItem.innerHTML =
+          (sections ? '<span class="fcaret">▸</span>' : '<span class="fcaret"></span>') +
           '<span class="fname">' + meta.name + '</span>' +
           (fileTotal ? '<span class="fprog">' + fileMarked + '/' + fileTotal + '</span>' : '');
-        fItem.addEventListener('click', function () { loadFile(fname); });
+        fItem.addEventListener('click', function () {
+          // toggle 展开/收起 section 子列表（无论文件是否已加载）
+          var wasExpanded = fileLi.classList.contains('expanded');
+          fileLi.classList.toggle('expanded');
+          expandedFiles[fname] = !wasExpanded;
+          loadFile(fname);
+        });
         fileLi.appendChild(fItem);
 
         // 子 section（仅在已加载时显示）
         var secUl = document.createElement('ul');
         secUl.className = 'tree';
-        var sections = state.cache[fname] && state.cache[fname].sections;
         if (sections) {
           sections.forEach(function (sec, idx) {
             var dotCls = sectionMasteryDot(fname, sec);
