@@ -179,6 +179,74 @@
   body.quiz-mode .doc-qa.open .doc-a { display: block !important; }
   .quiz-hint { background: var(--gold-bg); border:1px solid #fde68a; border-radius:8px; padding:12px 16px; font-size:13px; color:#78350f; margin-bottom:14px; line-height:1.7; display:none; }
   body.quiz-mode .quiz-hint { display:block; }
+
+  /* —— 问题管理按钮（编辑/删除） —— */
+  .qa-tools {
+    display: flex; align-items: center; gap: 6px;
+    margin: 0 14px 10px; padding-left: 14px;
+  }
+  .qa-tools button {
+    border: 1px solid #e5e7eb; background: #fff; font-size: 11.5px; font-weight: 600;
+    padding: 3px 12px; border-radius: 12px; cursor: pointer; color: #6b7280; transition: all .15s;
+  }
+  .qa-tools button:hover { transform: translateY(-1px); }
+  .qa-tools .btn-edit { border-color: #c7d2fe; color: #4338ca; background: #eef2ff; }
+  .qa-tools .btn-edit:hover { background: #4338ca; color: #fff; }
+  .qa-tools .btn-del { border-color: #fecaca; color: #dc2626; background: #fef2f2; }
+  .qa-tools .btn-del:hover { background: #dc2626; color: #fff; }
+
+  /* —— section 新增按钮 —— */
+  .sec-add {
+    display: inline-block; margin: 4px 0 14px;
+    border: 1px dashed #99d6cd; background: #f0fbfa; color: #0f766e;
+    font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 16px; cursor: pointer; transition: all .15s;
+  }
+  .sec-add:hover { background: #0f766e; color: #fff; border-style: solid; }
+
+  /* —— 编辑弹窗 —— */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 1000;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; width: 100%; max-width: 720px; max-height: 86vh;
+    display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+  }
+  .modal-head { padding: 16px 20px; border-bottom: 1px solid #eef2f7; display: flex; align-items: center; gap: 10px; }
+  .modal-head h3 { font-size: 15px; color: #111827; flex: 1; }
+  .modal-close { border: none; background: none; font-size: 20px; color: #9ca3af; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .modal-body label { display: block; font-size: 12.5px; font-weight: 700; color: #374151; margin: 0 0 6px; }
+  .modal-body .field { margin-bottom: 14px; }
+  .modal-body input[type=text] {
+    width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px;
+    font-size: 13.5px; font-family: inherit; transition: .15s;
+  }
+  .modal-body input[type=text]:focus { outline: none; border-color: var(--teal-bg); box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
+  .modal-body textarea {
+    width: 100%; min-height: 220px; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px;
+    font-size: 13px; line-height: 1.6; font-family: "SF Mono",Menlo,Consolas,monospace; resize: vertical; transition: .15s;
+  }
+  .modal-body textarea:focus { outline: none; border-color: var(--teal-bg); box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
+  .modal-hint { font-size: 11.5px; color: #9ca3af; margin-top: 6px; }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid #eef2f7; display: flex; justify-content: flex-end; gap: 10px; }
+  .modal-foot button { border-radius: 8px; font-size: 13px; font-weight: 600; padding: 8px 20px; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; transition: .15s; }
+  .modal-foot button:hover { border-color: #9ca3af; }
+  .modal-foot .btn-primary { background: #0f766e; border-color: #0f766e; color: #fff; }
+  .modal-foot .btn-primary:hover { background: #115e57; }
+  .modal-foot .btn-danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+  .modal-foot .btn-danger:hover { background: #b91c1c; }
+
+  /* —— 拖拽 —— */
+  .sec-item.dragging { opacity: .5; background: #eef7f5; }
+  .sec-item.drop-target { box-shadow: inset 0 2px 0 0 var(--teal-bg); }
+  .sec-item .drag-handle { flex: none; width: 14px; text-align: center; color: #cbd5e1; cursor: grab; font-size: 12px; margin-top: 2px; }
+  .sec-item .drag-handle:active { cursor: grabbing; }
+  .sec-item:hover .drag-handle { color: var(--teal-bg); }
+  .sec-item .sec-rename { flex: none; border: none; background: none; color: #cbd5e1; cursor: pointer; font-size: 12px; padding: 0 4px; }
+  .sec-item:hover .sec-rename { color: var(--teal); }
+  .sec-item .sec-rename:hover { color: #4338ca; }
   .random-btn { margin-right: auto; }
 
   .toast {
@@ -262,6 +330,31 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 编辑问题弹窗 -->
+<div class="modal-mask" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">编辑问题</h3>
+      <button class="modal-close" id="modalClose" title="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>问题标题</label>
+        <input type="text" id="editQTitle" placeholder="输入问题标题">
+      </div>
+      <div class="field">
+        <label>答案内容（支持 HTML，如 &lt;ul&gt; / &lt;li&gt; / &lt;p&gt; / &lt;code&gt;）</label>
+        <textarea id="editAHtml" placeholder="粘贴或输入答案 HTML"></textarea>
+        <div class="modal-hint">提示：&lt;ul&gt;&lt;li&gt;条目&lt;/li&gt;&lt;/ul&gt; 列表 / &lt;p&gt;段落&lt;/p&gt; / &lt;b&gt;加粗&lt;/b&gt; / &lt;pre&gt;&lt;code&gt;代码&lt;/code&gt;&lt;/pre&gt;</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" id="modalCancel">取消</button>
+      <button type="button" class="btn-primary" id="modalSave">保存</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -393,11 +486,21 @@
             secItem.className = 'sec-item';
             secItem.dataset.file = fname;
             secItem.dataset.idx = idx;
-            secItem.innerHTML = '<span class="dot ' + dotCls + '"></span><span class="sec-name">' + sec.name + '</span>';
+            secItem.innerHTML =
+              '<span class="drag-handle" draggable="true" title="拖动排序">⠿</span>' +
+              '<span class="dot ' + dotCls + '"></span>' +
+              '<span class="sec-name">' + sec.name + '</span>' +
+              '<button type="button" class="sec-rename" title="修改名称">✎</button>';
             secItem.addEventListener('click', function (e) {
+              if (e.target.classList.contains('drag-handle') || e.target.classList.contains('sec-rename')) return;
               e.stopPropagation();
               loadFile(fname, idx);
             });
+            secItem.querySelector('.sec-rename').addEventListener('click', function (e) {
+              e.stopPropagation();
+              renameSection(fname, idx, sec.name);
+            });
+            setupSectionDrag(secItem, fname, idx);
             secUl.appendChild(secItem);
           });
         }
@@ -539,6 +642,9 @@
     // 注入掌握度按钮到每个 qa
     injectMasteryBars(fname);
 
+    // 注入问题编辑/删除按钮 + section 新增按钮
+    injectQATools(fname);
+
     if (state.quizMode) document.body.classList.add('quiz-mode');
     contentWrap.scrollTop = 0;
   }
@@ -588,6 +694,206 @@
       });
       qa.appendChild(bar);
     });
+  }
+
+  // ===== 问题管理：编辑/删除 + 新增 =====
+  var _editState = { mode: null, file: null, oldTitle: null, sectionName: null };
+  var _qaToolsBound = false;
+
+  function bindModal() {
+    if (_qaToolsBound) return;
+    _qaToolsBound = true;
+    var modal = document.getElementById('editModal');
+    var close = function () { modal.classList.remove('show'); };
+    document.getElementById('modalClose').addEventListener('click', close);
+    document.getElementById('modalCancel').addEventListener('click', close);
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+    document.getElementById('modalSave').addEventListener('click', function () { doSaveQA(); });
+  }
+
+  function openEditModal(mode, file, opts) {
+    bindModal();
+    _editState.mode = mode;
+    _editState.file = file;
+    _editState.oldTitle = opts.oldTitle || null;
+    _editState.sectionName = opts.sectionName || null;
+    document.getElementById('modalTitle').textContent =
+      mode === 'add' ? '新增问题' : mode === 'edit' ? '编辑问题' : '问题';
+    document.getElementById('editQTitle').value = opts.title || '';
+    document.getElementById('editAHtml').value = opts.answerHtml || '';
+    document.getElementById('editModal').classList.add('show');
+    setTimeout(function () { document.getElementById('editQTitle').focus(); }, 50);
+  }
+
+  function doSaveQA() {
+    var title = document.getElementById('editQTitle').value.trim();
+    var answerHtml = document.getElementById('editAHtml').value.trim();
+    if (!title) { toastMsg('问题标题不能为空'); return; }
+    var f = _editState.file;
+    if (_editState.mode === 'edit') {
+      fetch('/api/qa/update', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: f, oldTitle: _editState.oldTitle, newTitle: title, answerHtml: answerHtml })
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res.ok) {
+          toastMsg('✅ 已保存修改');
+          document.getElementById('editModal').classList.remove('show');
+          reloadFileAfterEdit(f);
+        } else { toastMsg('保存失败：' + (res.error || '未知错误')); }
+      }).catch(function () { toastMsg('保存失败：网络错误'); });
+    } else if (_editState.mode === 'add') {
+      fetch('/api/qa/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: f, sectionName: _editState.sectionName, title: title, answerHtml: answerHtml })
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res.ok) {
+          toastMsg('✅ 已新增问题');
+          document.getElementById('editModal').classList.remove('show');
+          reloadFileAfterEdit(f);
+        } else { toastMsg('新增失败：' + (res.error || '未知错误')); }
+      }).catch(function () { toastMsg('新增失败：网络错误'); });
+    }
+  }
+
+  function deleteQuestion(fname, qtext) {
+    if (!confirm('确定删除问题「' + qtext.slice(0, 30) + (qtext.length > 30 ? '…' : '') + '」？此操作会写入源文件，不可撤销。')) return;
+    fetch('/api/qa/delete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: fname, title: qtext })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) { toastMsg('🗑️ 已删除问题'); reloadFileAfterEdit(fname); }
+      else { toastMsg('删除失败：' + (res.error || '未知错误')); }
+    }).catch(function () { toastMsg('删除失败：网络错误'); });
+  }
+
+  function reloadFileAfterEdit(fname) {
+    // 清除缓存，重新加载
+    state.cache[fname] = null;
+    delete state.cache[fname];
+    // 清理旧的掌握度记录里已删除的问题（保留，不强制清理）
+    loadFile(fname);
+  }
+
+  function injectQATools(fname) {
+    // 给每个 .doc-qa 加编辑/删除按钮
+    content.querySelectorAll('.doc-qa').forEach(function (qa) {
+      var qtextEl = qa.querySelector('.doc-q .qtext');
+      if (!qtextEl) return;
+      var qtext = qtextEl.textContent.trim();
+      var tools = document.createElement('div');
+      tools.className = 'qa-tools';
+      tools.innerHTML =
+        '<button type="button" class="btn-edit">✏️ 编辑</button>' +
+        '<button type="button" class="btn-del">🗑️ 删除</button>';
+      var btnEdit = tools.querySelector('.btn-edit');
+      var btnDel = tools.querySelector('.btn-del');
+      btnEdit.addEventListener('click', function (e) {
+        e.stopPropagation();
+        // 提取答案 HTML（去掉已注入的掌握度条/tools）
+        var a = qa.querySelector('.doc-a');
+        var answerHtml = a ? a.innerHTML : '';
+        // 移除 answer 里可能残留的 fix-bar
+        answerHtml = answerHtml.replace(/<div class="fix-bar">[\s\S]*?<\/div>/g, '');
+        openEditModal('edit', fname, { oldTitle: qtext, title: qtext, answerHtml: answerHtml });
+      });
+      btnDel.addEventListener('click', function (e) {
+        e.stopPropagation();
+        deleteQuestion(fname, qtext);
+      });
+      qa.appendChild(tools);
+    });
+
+    // 给每个 .doc-section 加新增按钮
+    content.querySelectorAll('.doc-section').forEach(function (sec) {
+      var h2 = sec.querySelector('h2');
+      if (!h2) return;
+      var secName = h2.textContent.trim();
+      var addBtn = document.createElement('div');
+      addBtn.className = 'sec-add';
+      addBtn.textContent = '+ 新增问题';
+      addBtn.addEventListener('click', function () {
+        openEditModal('add', fname, { sectionName: secName, title: '', answerHtml: '' });
+      });
+      sec.insertBefore(addBtn, sec.querySelector('.doc-qa') || h2.nextSibling);
+    });
+  }
+
+  // ===== section 拖拽排序 + 改名 =====
+  var _dragFromIdx = null;
+  var _dragFile = null;
+
+  function setupSectionDrag(secItem, fname, idx) {
+    var handle = secItem.querySelector('.drag-handle');
+    if (!handle) return;
+    handle.addEventListener('dragstart', function (e) {
+      _dragFromIdx = parseInt(secItem.dataset.idx, 10);
+      _dragFile = fname;
+      secItem.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', String(idx)); } catch (err) {}
+    });
+    handle.addEventListener('dragend', function () {
+      secItem.classList.remove('dragging');
+      document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('drop-target'); });
+    });
+    secItem.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      if (_dragFromIdx == null) return;
+      document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('drop-target'); });
+      secItem.classList.add('drop-target');
+      e.dataTransfer.dropEffect = 'move';
+    });
+    secItem.addEventListener('dragleave', function () { secItem.classList.remove('drop-target'); });
+    secItem.addEventListener('drop', function (e) {
+      e.preventDefault();
+      secItem.classList.remove('drop-target');
+      if (_dragFromIdx == null) return;
+      var toIdx = parseInt(secItem.dataset.idx, 10);
+      if (_dragFromIdx === toIdx) { _dragFromIdx = null; return; }
+      commitSectionReorder(fname, _dragFromIdx, toIdx);
+      _dragFromIdx = null;
+    });
+  }
+
+  function commitSectionReorder(fname, fromIdx, toIdx) {
+    var data = state.cache[fname];
+    if (!data || !data.sections) return;
+    // 重新排列 sections 数组
+    var arr = data.sections.slice();
+    var moved = arr.splice(fromIdx, 1)[0];
+    arr.splice(toIdx, 0, moved);
+    // 构造请求体（oldName 是原始名，newName 暂不变）
+    var sections = arr.map(function (s) { return { oldName: s.name, newName: s.name }; });
+    fetch('/api/section/reorder', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: fname, sections: sections })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) {
+        toastMsg('🔀 已调整小节顺序');
+        // 更新缓存中的 section 顺序（需重新 fetch 更可靠）
+        state.cache[fname] = null;
+        loadFile(fname);
+      } else { toastMsg('排序失败：' + (res.error || '未知错误')); }
+    }).catch(function () { toastMsg('排序失败：网络错误'); });
+  }
+
+  function renameSection(fname, idx, oldName) {
+    var newName = prompt('修改小节名称：', oldName);
+    if (newName == null || newName.trim() === '' || newName.trim() === oldName) return;
+    newName = newName.trim();
+    var data = state.cache[fname];
+    if (!data || !data.sections[idx]) return;
+    var sections = data.sections.map(function (s, i) { return { oldName: s.name, newName: i === idx ? newName : s.name }; });
+    fetch('/api/section/reorder', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: fname, sections: sections })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res.ok) {
+        toastMsg('✏️ 已修改名称');
+        state.cache[fname] = null;
+        loadFile(fname);
+      } else { toastMsg('改名失败：' + (res.error || '未知错误')); }
+    }).catch(function () { toastMsg('改名失败：网络错误'); });
   }
 
   // 汇总一个 section 内所有题目的掌握度，返回圆点 class

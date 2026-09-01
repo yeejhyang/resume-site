@@ -102,9 +102,210 @@ function readBody(req) {
   });
 }
 
+/**
+ * 按起始标签匹配平衡的闭合块（支持任意 HTML 标签）。
+ * 返回块的 [start, end) 区间与 openTag。
+ */
+function extractBlock(html, startPos) {
+  const openTagEnd = html.indexOf('>', startPos) + 1;
+  const openTag = html.slice(startPos, openTagEnd);
+  const tagNameMatch = openTag.match(/^<(\w+)/);
+  if (!tagNameMatch) return null;
+  const tagName = tagNameMatch[1];
+  // 同时扫描开标签和闭标签，正确配对嵌套深度
+  const tagRe = new RegExp('<\\/?\\s*' + tagName + '\\b[^>]*>', 'g');
+  tagRe.lastIndex = openTagEnd;
+  let depth = 1; // 起点这个开标签
+  let m;
+  while ((m = tagRe.exec(html))) {
+    const token = m[0];
+    if (token.charAt(1) === '/') {
+      depth--;
+      if (depth === 0) {
+        return { start: startPos, end: m.index + m[0].length, openTag };
+      }
+    } else {
+      depth++;
+    }
+  }
+  return null;
+}
+
+/**
+ * 定位某个 section（按标题文本）的完整块区间。
+ */
+function findSection(html, sectionName) {
+  const pat = escapeRegExp(sectionName);
+  const re = new RegExp(pat);
+  const m = re.exec(html);
+  if (!m) return null;
+  // 从标题位置向前找 <div class="section"> 起点
+  const secStart = html.lastIndexOf('<div class="section">', m.index);
+  if (secStart < 0) return null;
+  return extractBlock(html, secStart);
+}
+
+/**
+ * 定位某个 .qa 块（按问题标题文本）的完整区间。
+ * 返回 { start, end, openTag, qStart, qEnd, aStart, aEnd, qContent }
+ */
+function findQABlock(html, qtext) {
+  const pat = escapeRegExp(qtext);
+  const re = new RegExp(pat);
+  const m = re.exec(html);
+  if (!m) return null;
+  const qPos = m.index;
+  // 向前找 <div class="q"> 起点
+  const qTagStart = html.lastIndexOf('<div class="q">', qPos);
+  if (qTagStart < 0) return null;
+  const qBlock = extractBlock(html, qTagStart);
+  if (!qBlock) return null;
+  // q 块结束处应紧跟 .a 块或 </div>(qa结束)
+  // 向后找 <div class="qa"> 起点（在 q 之前）
+  const qaTagStart = html.lastIndexOf('<div class="qa">', qTagStart);
+  if (qaTagStart < 0) return null;
+  const qaBlock = extractBlock(html, qaTagStart);
+  if (!qaBlock) return null;
+  // 在 qa 块内部找 .a
+  const aTagPos = html.indexOf('<div class="a">', qBlock.end);
+  let aBlock = null;
+  if (aTagPos >= 0 && aTagPos < qaBlock.end) {
+    aBlock = extractBlock(html, aTagPos);
+  }
+  return {
+    qaStart: qaBlock.start,
+    qaEnd: qaBlock.end,
+    qStart: qBlock.start,
+    qEnd: qBlock.end,
+    aStart: aBlock ? aBlock.start : -1,
+    aEnd: aBlock ? aBlock.end : -1,
+    qContent: html.slice(qBlock.openTag.length + qBlock.start, qBlock.end - '</div>'.length).trim(),
+  };
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = decodeURIComponent(url.pathname);
+
+  // ---- API: 更新问题标题 + 答案（按旧标题定位） ----
+  if (pathname === '/api/qa/update' && req.method === 'POST') {
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return sendJson(res, 400, { ok: false, error: 'JSON 解析失败' }); }
+    const { file, oldTitle, newTitle, answerHtml } = body;
+    if (!file || !oldTitle || !newTitle) return sendJson(res, 400, { ok: false, error: '缺少参数' });
+    const safeFile = path.normalize(path.join(ROOT, file));
+    if (!safeFile.startsWith(ROOT)) return sendJson(res, 403, { ok: false, error: '非法路径' });
+    try {
+      let content = fs.readFileSync(safeFile, 'utf8');
+      const qa = findQABlock(content, oldTitle);
+      if (!qa) return sendJson(res, 404, { ok: false, error: '未找到该问题' });
+      // 替换问题标题
+      content = content.slice(0, qa.qStart + '<div class="q">'.length) + newTitle + content.slice(qa.qEnd - '</div>'.length);
+      // 替换答案（若提供）
+      if (typeof answerHtml === 'string' && qa.aStart >= 0) {
+        content = content.slice(0, qa.aStart + '<div class="a">'.length) + answerHtml + content.slice(qa.aEnd - '</div>'.length);
+      }
+      fs.writeFileSync(safeFile, content, 'utf8');
+      return sendJson(res, 200, { ok: true });
+    } catch (e) {
+      return sendJson(res, 500, { ok: false, error: String(e && e.message || e) });
+    }
+  }
+
+  // ---- API: 删除问题 ----
+  if (pathname === '/api/qa/delete' && req.method === 'POST') {
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return sendJson(res, 400, { ok: false, error: 'JSON 解析失败' }); }
+    const { file, title } = body;
+    if (!file || !title) return sendJson(res, 400, { ok: false, error: '缺少参数' });
+    const safeFile = path.normalize(path.join(ROOT, file));
+    if (!safeFile.startsWith(ROOT)) return sendJson(res, 403, { ok: false, error: '非法路径' });
+    try {
+      const content = fs.readFileSync(safeFile, 'utf8');
+      const qa = findQABlock(content, title);
+      if (!qa) return sendJson(res, 404, { ok: false, error: '未找到该问题' });
+      const newContent = content.slice(0, qa.qaStart) + content.slice(qa.qaEnd);
+      fs.writeFileSync(safeFile, newContent, 'utf8');
+      return sendJson(res, 200, { ok: true });
+    } catch (e) {
+      return sendJson(res, 500, { ok: false, error: String(e && e.message || e) });
+    }
+  }
+
+  // ---- API: 在指定 section 追加新问题 ----
+  if (pathname === '/api/qa/add' && req.method === 'POST') {
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return sendJson(res, 400, { ok: false, error: 'JSON 解析失败' }); }
+    const { file, sectionName, title, answerHtml } = body;
+    if (!file || !sectionName || !title) return sendJson(res, 400, { ok: false, error: '缺少参数' });
+    const safeFile = path.normalize(path.join(ROOT, file));
+    if (!safeFile.startsWith(ROOT)) return sendJson(res, 403, { ok: false, error: '非法路径' });
+    try {
+      const content = fs.readFileSync(safeFile, 'utf8');
+      const sec = findSection(content, sectionName);
+      if (!sec) return sendJson(res, 404, { ok: false, error: '未找到该 section' });
+      const ans = (typeof answerHtml === 'string' && answerHtml) ? answerHtml : '<p></p>';
+      const newQA = '\n  <div class="qa">\n    <div class="q">' + title + '</div>\n    <div class="a">\n      ' + ans + '\n    </div>\n  </div>';
+      // 在 section 的闭合 </div> 前插入
+      const insertPos = sec.end - '</div>'.length;
+      const newContent = content.slice(0, insertPos) + newQA + content.slice(insertPos);
+      fs.writeFileSync(safeFile, newContent, 'utf8');
+      return sendJson(res, 200, { ok: true });
+    } catch (e) {
+      return sendJson(res, 500, { ok: false, error: String(e && e.message || e) });
+    }
+  }
+
+  // ---- API: 重排 section 顺序 + 可选改名 ----
+  if (pathname === '/api/section/reorder' && req.method === 'POST') {
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return sendJson(res, 400, { ok: false, error: 'JSON 解析失败' }); }
+    const { file, sections } = body; // sections: [{oldName, newName?}]
+    if (!file || !Array.isArray(sections) || !sections.length) return sendJson(res, 400, { ok: false, error: '缺少参数' });
+    const safeFile = path.normalize(path.join(ROOT, file));
+    if (!safeFile.startsWith(ROOT)) return sendJson(res, 403, { ok: false, error: '非法路径' });
+    try {
+      const content = fs.readFileSync(safeFile, 'utf8');
+      // 解析所有 section 块（按原文顺序）
+      const secs = [];
+      let pos = 0;
+      while ((idx = content.indexOf('<div class="section">', pos)) >= 0) {
+        const block = extractBlock(content, idx);
+        if (!block) break;
+        // 提取该 section 的标题
+        const h2m = content.indexOf('<h2>', block.start);
+        const h2End = content.indexOf('</h2>', h2m);
+        let name = '';
+        if (h2m >= 0 && h2End > h2m && h2m < block.end) name = content.slice(h2m + '<h2>'.length, h2End);
+        secs.push({ name: name, block: block });
+        pos = block.end;
+      }
+      if (!secs.length) return sendJson(res, 404, { ok: false, error: '未找到 section' });
+
+      // 按新顺序重建
+      let rebuilt = '';
+      sections.forEach(function (s) {
+        const orig = secs.find(function (x) { return x.name === s.oldName; });
+        if (!orig) return;
+        let blk = content.slice(orig.block.start, orig.block.end);
+        // 改名：替换 <h2>name</h2>
+        if (s.newName && s.newName !== s.oldName) {
+          const h2m = blk.indexOf('<h2>');
+          const h2End = blk.indexOf('</h2>', h2m);
+          if (h2m >= 0 && h2End > h2m) blk = blk.slice(0, h2m + '<h2>'.length) + s.newName + blk.slice(h2End);
+        }
+        rebuilt += '\n' + blk + '\n';
+      });
+      // 用重建后的 section 块替换原文中的所有 section 块
+      const firstStart = secs[0].block.start;
+      const lastEnd = secs[secs.length - 1].block.end;
+      const newContent = content.slice(0, firstStart) + rebuilt + content.slice(lastEnd);
+      fs.writeFileSync(safeFile, newContent, 'utf8');
+      return sendJson(res, 200, { ok: true });
+    } catch (e) {
+      return sendJson(res, 500, { ok: false, error: String(e && e.message || e) });
+    }
+  }
 
   // ---- API: 读取某个答案块 ----
   if (pathname === '/api/answer/get' && req.method === 'GET') {
