@@ -264,7 +264,7 @@
 <ul>
   <li><b>多路混合检索：</b>向量（Milvus）、关键词（ES BM25）、知识图谱（LightRAG）、联网搜索四通道并行召回，RRF 融合 + Rerank 精排，支持引用链多跳推理；并设计「abstract 全局召回 + 按需拉取 arXiv 全文」两级精读（仅索引摘要，单篇成本约 <span class="metric">0.2KB</span>）。自建 <span class="metric">50</span> 个测试场景，Recall@10 <span class="metric">88.6%</span>、MRR <span class="metric">0.72</span>，融合较单路提升 <span class="metric">12.3%</span>。</li>
   <li><b>问题理解与意图路由：</b>Query 改写 + 多问题分解，LLM 打分 + 树形意图识别，设计「KB 召回节点 + MCP 精读节点」两级意图联动路由；将第一级命中摘要（含 arxiv_id）注入第二级 MCP 参数提取，由 LLM 自动抽取论文编号驱动全文拉取，免去人工指定编号。Top-1 准确率 <span class="metric">92.5%</span>；</li>
-  <li><b>模型工程化与 Agent 编排：</b>基于 <b>Java + Spring Boot</b> 搭建服务端（<b>MyBatis-Plus</b> 持久层、<b>Redis</b> 缓存、<b>RocketMQ</b> 异步入库），抽象多供应商 Chat/Embedding/Rerank 统一客户端，多候选路由 + 熔断降级，流式首包 <span class="metric">P50 1.8s</span>；MCP 对接 Semantic Scholar，ReAct 编排生成带逐句引用的文献综述。</li>
+  <li><b>模型工程化与 Agent 编排：</b>基于 <b>Java + Spring Boot</b> 搭建服务端（<b>MyBatis-Plus</b> 持久层、<b>Redis</b> 缓存、<b>RocketMQ</b> 异步入库），抽象多供应商 Chat/Embedding/Rerank 统一客户端，多候选路由 + 熔断降级；</li>
 </ul>
 
 <h2>专业技能</h2>

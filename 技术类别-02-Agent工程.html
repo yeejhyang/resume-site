@@ -321,13 +321,7 @@
 
     var fixEdit = fixBar.querySelector('.fix-edit');
 
-    // 若已有修改记录，直接加载覆盖后的答案
-    var savedFix = null;
-    try { savedFix = localStorage.getItem(keyA); } catch (e) {}
-    if (savedFix) {
-      a.innerHTML = savedFix;
-      a.insertBefore(fixBar, a.firstChild);
-    }
+    // 答案已写回源文件：重载页面即显示最新内容，无需从 localStorage 恢复
 
     fixEdit.addEventListener('click', function () {
       var editing = a.getAttribute('contenteditable') === 'true';
@@ -339,14 +333,25 @@
         a.focus();
         return;
       }
-      // 保存：剔除工具条自身后直接覆盖
+      // 保存：剔除工具条后，调用本地 API 写回源文件
       var clone = a.cloneNode(true);
       var b = clone.querySelector('.fix-bar');
       if (b) b.parentNode.removeChild(b);
-      try { localStorage.setItem(keyA, clone.innerHTML); } catch (e) {}
+      var fileName = location.pathname.split('/').pop() || 'index.html';
+      fixEdit.textContent = '保存中…';
+      fetch('/api/answer/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: fileName, key: qtext, innerHtml: clone.innerHTML })
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        fixEdit.textContent = res && res.ok ? '✓ 已同步到源文件' : '✗ 同步失败';
+        setTimeout(function () { fixEdit.textContent = '✏️ 修改标准答案'; }, 1800);
+      }).catch(function () {
+        fixEdit.textContent = '✗ 同步失败';
+        setTimeout(function () { fixEdit.textContent = '✏️ 修改标准答案'; }, 1800);
+      });
       a.setAttribute('contenteditable', 'false');
       a.classList.remove('fix-editing');
-      fixEdit.textContent = '✏️ 修改标准答案';
     });
   });
   window.setAll = function (open) {

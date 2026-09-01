@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大模型面试题 · 01 Agent 面试题</title>
+<style>
+  :root {
+    --blue: #2563EB; --navy: #1E3A8A; --ink: #1f2937;
+    --bg: #f5f7fb; --card: #fff; --muted: #6b7280;
+    --tag: #eff6ff; --tag-ink: #1d4ed8; --gold: #b45309; --gold-bg: #fffbeb;
+    --teal: #0f766e; --teal-bg: #14b8a6;
+    --side-bg: #fafbfc; --side-border: #e5e7eb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+    line-height: 1.7; padding: 24px;
+  }
+  .layout { display: flex; gap: 20px; max-width: 1500px; margin: 0 auto; align-items: flex-start; }
+
+  /* —— 左侧侧边栏（可展开折叠树） —— */
+  .sidebar {
+    flex: 0 0 320px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 18px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    position: sticky; top: 24px;
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-group-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 800; color: #111827;
+    padding: 8px 20px 12px;
+    border-bottom: 1px solid #eef2f7;
+    margin-bottom: 6px;
+  }
+  .side-group-title .icon { color: #6b7280; font-size: 16px; }
+  .side-list { list-style: none; }
+  .side-cat {
+    border-bottom: 1px solid #f1f3f6;
+  }
+  .side-cat:last-child { border-bottom: none; }
+  .side-cat-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 20px;
+    color: #374151; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: background .15s, color .15s;
+    user-select: none;
+  }
+  .side-cat-head:hover { background: #f3f6f9; color: var(--teal); }
+  .side-cat-head .num {
+    flex: none; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--muted); font-weight: 700;
+    border: 1px solid #d1d5db; border-radius: 4px;
+    padding: 0 6px; min-width: 32px; height: 20px;
+  }
+  .side-cat-head .label { flex: 1; }
+  .side-cat-head .caret {
+    color: #cbd5e1; font-size: 12px;
+    transition: transform .18s; width: 14px; text-align: center;
+  }
+  .side-cat.open .side-cat-head { color: var(--teal); background: #eef7f5; }
+  .side-cat.open .side-cat-head .num { color: var(--teal); border-color: var(--teal-bg); }
+  .side-cat.open .side-cat-head .caret { transform: rotate(90deg); color: var(--teal-bg); }
+  .side-children {
+    list-style: none;
+    max-height: 0; overflow: hidden;
+    transition: max-height .25s ease;
+    background: #fbfcfd;
+  }
+  .side-cat.open .side-children { max-height: 1200px; }
+
+  .side-child {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 9px 20px 9px 44px;
+    color: #4b5563; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: background .15s, color .15s;
+    border-left: 3px solid transparent;
+    line-height: 1.5;
+  }
+  .side-child .idx {
+    flex: none; color: #9ca3af; font-weight: 700; font-size: 12.5px;
+    min-width: 22px;
+  }
+  .side-child .txt { flex: 1; }
+  .side-child:hover { background: #eef7f5; color: var(--teal); }
+  .side-child.active { background: #d9f1ec; color: var(--teal); border-left-color: var(--teal-bg); font-weight: 700; }
+  .side-child.active .idx { color: var(--teal); }
+  .side-child.disabled { color: #cbd5e1; cursor: not-allowed; }
+  .side-child.disabled:hover { background: transparent; color: #cbd5e1; }
+
+  .side-intro {
+    padding: 9px 20px 9px 44px;
+    color: #4b5563; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .15s, color .15s;
+    border-left: 3px solid transparent;
+    background: #fff;
+  }
+  .side-intro:hover { background: #eef7f5; color: var(--teal); }
+  .side-intro.active { background: #d9f1ec; color: var(--teal); border-left-color: var(--teal-bg); font-weight: 700; }
+  .side-intro .tag-intro {
+    display: inline-block; font-size: 11px; color: #fff; background: #94a3b8;
+    padding: 0 6px; border-radius: 8px; margin-right: 4px; vertical-align: 1px;
+  }
+
+  /* —— 右侧主区 —— */
+  .main { flex: 1 1 auto; min-width: 0; }
+  .back { display:inline-block; margin-bottom:14px; color:#0f766e; text-decoration:none; font-size:13px; font-weight:600; }
+  header {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 20px;
+  }
+  header h1 { font-size: 22px; font-weight: 800; }
+  header .crumb { font-size: 12px; opacity: .9; margin-bottom: 4px; }
+  header p { opacity: .92; font-size: 13px; margin-top: 6px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
+
+  .section { background: var(--card); border-radius: 14px; padding: 24px 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .section h2 { font-size: 17px; color: var(--teal); border-left: 4px solid var(--teal-bg); padding-left: 10px; margin-bottom: 16px; }
+  .qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
+  .qa:hover { border-color: #99d6cd; box-shadow: 0 2px 8px rgba(15,118,110,.08); }
+  .qa:last-child { margin-bottom: 0; }
+  .q { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14.5px; color: #111827; padding: 12px 14px; margin: 0; background: #f8fafc; }
+  .q:hover { background: #eef7f5; }
+  .q .qicon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--teal-bg); color: #fff; border-radius: 6px; font-size: 12px; font-weight: 800; }
+  .q .qtext { flex: 1 1 auto; line-height: 1.5; }
+  .q .caret { flex: none; color: #9ca3af; font-size: 14px; transition: transform .18s; width: 16px; text-align: center; }
+  .qa.open .caret { transform: rotate(90deg); }
+  .a { display: none; }
+  .qa.open .a { display: block; }
+  .a { padding: 14px 16px 14px 24px; font-size: 13.5px; color: #374151; border-left: 3px solid #e6f1ef; margin-left: 16px; margin-right: 16px; margin-bottom: 16px; }
+  .a b { color: #111827; }
+  .a .fix-bar { float: right; margin: -4px -6px 8px 12px; display: flex; align-items: center; gap: 6px; }
+  .a .fix-edit { border: 1px solid #c7d2fe; background: #eef2ff; color: #4338ca; font-size: 11px; padding: 1px 10px; border-radius: 12px; cursor: pointer; }
+  .a .fix-edit:hover { background: #4338ca; color: #fff; }
+  .a ul { margin: 6px 0 6px 18px; }
+  .a li { margin-bottom: 6px; }
+  .a p { margin-bottom: 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .answer-box { padding: 12px 16px 14px; margin: 0 16px 16px; border-top: 1px dashed var(--line, #e5e7eb); }
+  .answer-box .ab-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+  .answer-box .ab-title { font-weight: 700; color: #0f766e; }
+  .answer-box textarea { width: 100%; min-height: 76px; border: 1px solid var(--line, #e5e7eb); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; background: #fcfcfd; color: var(--ink); }
+  .answer-box textarea:focus { outline: none; border-color: #14b8a6; background: #fff; box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
+  .answer-box .ab-foot { margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .answer-box .ab-status { font-size: 11.5px; color: var(--muted, #6b7280); }
+  .answer-box .ab-clear { border: 1px solid #fecaca; background: #fff; color: #dc2626; font-size: 11.5px; padding: 2px 12px; border-radius: 14px; cursor: pointer; }
+  .answer-box .ab-clear:hover { background: #fef2f2; }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .toolbar button { border: 1px solid #99d6cd; background: #fff; color: #0f766e; font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .toolbar button:hover { background: #0f766e; color: #fff; }
+  code { font-family: "SF Mono",Menlo,Consolas,monospace; font-size: 12px; background: #f3f4f6; padding: 1px 5px; border-radius: 4px; color: #b91c1c; }
+  pre { background: #1f2937; color: #e5e7eb; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 12px; line-height: 1.6; margin: 8px 0; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  .tip { background: var(--gold-bg); border:1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #78350f; margin-bottom: 14px; line-height: 1.7; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; border-radius: 8px; overflow: hidden; }
+  th, td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #eef7f5; color: #0f766e; font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    .sidebar { flex: 1 1 auto; position: static; max-height: none; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ===== 左侧侧边栏：5 大分类 + 子题（Agent 已展开） ===== -->
+  <aside class="sidebar">
+    <div class="side-group-title">
+      <span class="icon">▦</span>
+      <span>大模型面试题</span>
+    </div>
+    <ul class="side-list">
+
+      <!-- 01 Agent 面试题（展开） -->
+      <li class="side-cat open">
+        <div class="side-cat-head" data-cat="agent">
+          <span class="num">01</span><span class="label">Agent 面试题</span><span class="caret">▸</span>
+        </div>
+        <ul class="side-children">
+          <li class="side-intro" data-target="intro">▦ Agent 面试题介绍</li>
+          <li class="side-child active" data-target="q1"><span class="idx">1.</span><span class="txt">什么是 Agent？与大模型有什么本质不同？</span></li>
+          <li class="side-child" data-target="q2"><span class="idx">2.</span><span class="txt">Agent 的基本架构由哪些核心组件构成？</span></li>
+          <li class="side-child" data-target="q3"><span class="idx">3.</span><span class="txt">Workflow、Agent、Tools 三者概念和区别</span></li>
+          <li class="side-child" data-target="q4"><span class="idx">4.</span><span class="txt">了解哪些其他 Agent 设计范式？和 Workflow 的区别？</span></li>
+          <li class="side-child" data-target="q5"><span class="idx">5.</span><span class="txt">Agent 推理模式有哪些？ReAct 是啥？怎么实现？</span></li>
+          <li class="side-child" data-target="q6"><span class="idx">6.</span><span class="txt">ReAct、Plan-and-Execute、Reflection 的核心区别与选型</span></li>
+          <li class="side-child" data-target="q7"><span class="idx">7.</span><span class="txt">复杂任务怎么做的任务拆分？为什么要拆分？</span></li>
+          <li class="side-child" data-target="q8"><span class="idx">8.</span><span class="txt">AI Agent 的记忆机制，实际开发中如何设计？</span></li>
+          <li class="side-child" data-target="q9"><span class="idx">9.</span><span class="txt">长短期记忆系统怎么做的？粒度多少？怎么用？</span></li>
+          <li class="side-child" data-target="q10"><span class="idx">10.</span><span class="txt">什么是 Multi-Agent？</span></li>
+          <li class="side-child" data-target="q11"><span class="idx">11.</span><span class="txt">Single-Agent 和 Multi-Agent 的设计方案？</span></li>
+          <li class="side-child" data-target="q12"><span class="idx">12.</span><span class="txt">Agent 记忆压缩通常有哪些方法？</span></li>
+          <li class="side-child" data-target="q13"><span class="idx">13.</span><span class="txt">为什么有时选择「手搓」Agent 而不用成熟框架？</span></li>
+          <li class="side-child" data-target="q14"><span class="idx">14.</span><span class="txt">如何赋予 LLM 规划能力？</span></li>
+          <li class="side-child" data-target="q15"><span class="idx">15.</span><span class="txt">讲讲 Agent 的反思机制？为什么要用？</span></li>
+          <li class="side-child" data-target="q16"><span class="idx">16.</span><span class="txt">如何设计多 Agent 的协作与动态切换机制？</span></li>
+        </ul>
+      </li>
+
+      <!-- 02 RAG 面试题（折叠占位） -->
+      <li class="side-cat">
+        <div class="side-cat-head" data-cat="rag">
+          <span class="num">02</span><span class="label">RAG 面试题</span><span class="caret">▸</span>
+        </div>
+      </li>
+
+      <!-- 03 LLM 工具调用面试题（折叠占位） -->
+      <li class="side-cat">
+        <div class="side-cat-head" data-cat="tools">
+          <span class="num">03</span><span class="label">LLM 工具调用面试题</span><span class="caret">▸</span>
+        </div>
+      </li>
+
+      <!-- 04 大模型工程面试题（折叠占位） -->
+      <li class="side-cat">
+        <div class="side-cat-head" data-cat="eng">
+          <span class="num">04</span><span class="label">大模型工程面试题</span><span class="caret">▸</span>
+        </div>
+      </li>
+
+      <!-- 05 LangChain 框架面试题（折叠占位） -->
+      <li class="side-cat">
+        <div class="side-cat-head" data-cat="lc">
+          <span class="num">05</span><span class="label">LangChain 框架面试题</span><span class="caret">▸</span>
+        </div>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== 右侧主区 ===== -->
+  <main class="main">
+    <a class="back" href="index.html">← 返回索引</a>
+    <header>
+      <div class="crumb">大模型面试题 / 01 Agent 面试题</div>
+      <h1>1. 什么是 Agent？与大模型有什么本质不同？</h1>
+      <p>来源：小林面试笔记（xiaolinnote.com）· Agent 基础与核心机制</p>
+      <span class="badge">Agent 定义</span><span class="badge">工具调用</span><span class="badge">记忆机制</span><span class="badge">MCP / A2A</span>
+    </header>
+
+    <div class="tip"><b>说明：</b>本节聚焦 Agent 面试第 1 题，整合小林面试笔记原文为 Q&amp;A 卡片，点击问题可折叠/展开答案。侧边栏展示全部 16 道子题（其余 15 题待补）。</div>
+
+    <div class="toolbar">
+      <button onclick="setAll(true)">全部展开</button>
+      <button onclick="setAll(false)">全部折叠</button>
+    </div>
+
+    <div class="section" id="q1-anchor">
+      <h2>一、对话引入：面试官的追问</h2>
+      <div class="qa open">
+        <div class="q">面试官原题：说说你理解的 AI Agent 是什么？</div>
+        <div class="a">
+          <p>🙋‍♂️ <b>候选人答（踩坑版）：</b></p>
+          <ul>
+            <li>❌ 第一轮：「Agent 就是给大模型加了插件，比如 ChatGPT 的插件功能，让它能联网搜索、调用 API 啥的。」</li>
+            <li>❌ 第二轮：「Agent 就是能调用工具的大模型，给它配几个工具函数，它就能做更多事了。」</li>
+            <li>❌ 第三轮：「自主……就是它自己决定调哪个工具？」</li>
+          </ul>
+          <p>👔 <b>面试官点评：</b>你说的只是工具调用，跟 Agent 差远了。Agent 最核心的是「<b>自主</b>」——自主规划、多步执行、感知结果再调整，这才是 Agent 的闭环。给它一个目标，它自己把任务拆成多步，一步一步做，每步结果反馈回来再指导下一步，这和普通调工具有本质区别。</p>
+          <p>✅ <b>答题要点：</b>抓住一个核心词——「<b>自主闭环</b>」。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>二、简要回答</h2>
+      <div class="qa open">
+        <div class="q">Q1：什么是 Agent？一句话概括</div>
+        <div class="a">
+          <p>Agent 本质上是一个能<b>自主</b>完成目标的 AI 系统，跟传统 AI 最核心的区别在于「<b>自主性</b>」和「<b>能行动</b>」。</p>
+          <ul>
+            <li>传统 AI：你问一个问题它回答一个问题，每次都是独立的、被动响应。</li>
+            <li>Agent：有自己的规划能力，给它一个复杂目标，它会自己把任务拆成多步，通过调工具、访问记忆、感知环境来一步步执行，直到完成。</li>
+            <li>它不只是输出文字，而是真的能<b>做事</b>。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>三、详细解析</h2>
+
+      <div class="qa open">
+        <div class="q">Q2：普通大模型（LLM）的三大局限性？</div>
+        <div class="a">
+          <p>普通大模型本质上是个「问答机器」，三个局限一环扣一环：</p>
+          <ul>
+            <li><b>① 知识被冻结</b>：训练数据有截止日期，问它今天天气、最新股价完全不知道，没有任何途径获取实时信息。好比一个人毕业之后再也没看过书。</li>
+            <li><b>② 不能行动</b>：让它发邮件、查数据库、执行代码，它只能告诉你「你可以这样做」，但自己做不到。它本质是文本生成器，所有输出都是字符。</li>
+            <li><b>③ 没有持续状态</b>：每次调用之间完全失忆，除非手动把之前的对话塞进去，不然它根本不记得上一轮说过什么。</li>
+            <li><b>总结</b>：知识是死的、手脚是没有的、记忆是断的，加在一起普通 LLM 只能做「一问一答」，稍微复杂的多步任务完全无能为力。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q3：Agent 的核心运作闭环是什么？</div>
+        <div class="a">
+          <p>Agent 有一个核心运作闭环：<b>感知 → 规划 → 行动 → 再感知</b>。</p>
+          <p>给它一个目标（"帮我调研竞品然后整理成报告"），它不是直接输出一段文字了事，而是：</p>
+          <ul>
+            <li>先<b>拆解任务</b>：要搜索哪些关键词、要访问哪些网站、要怎么组织内容；</li>
+            <li>然后<b>一步一步去执行</b>，每一步的结果又反馈回来，指导下一步的决策。</li>
+          </ul>
+          <p>这种能力背后由三件核心的事在支撑——工具调用、记忆机制、多步推理与自我纠错。</p>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q4：Agent 核心能力一：工具调用（Tool Use）</div>
+        <div class="a">
+          <p>工具调用是让 Agent 从「说话」变成「做事」的关键。Agent 能调用外部工具：搜索引擎、代码执行器、数据库、API 等。</p>
+          <p><b>关键认知：</b>模型只负责「决策」——输出调用指令（哪个工具、传什么参数），真正的「执行」由代码完成。这是安全边界：模型不能自己跑代码，必须由外部执行环境去做。</p>
+          <p><b>为什么重要：</b>一下子突破前面说的三个局限：</p>
+          <ul>
+            <li>知识被冻结 → 接上搜索引擎，模型就能获取实时信息。</li>
+            <li>不能行动 → 接上邮件 API、代码执行器，模型就能真正做事。</li>
+            <li>好比一个人原来只能用嘴说话，现在有了手和脚。</li>
+          </ul>
+          <p><b>代码示例</b>（定义两个工具「查天气」「发邮件」）：</p>
+<pre><code>tools = [
+  {
+    "name": "get_weather",
+    "description": "查询某个城市的天气",
+    "parameters": {
+      "type": "object",
+      "properties": {"city": {"type": "string", "description": "城市名"}},
+      "required": ["city"]
+    }
+  },
+  {
+    "name": "send_email",
+    "description": "发送邮件给指定收件人",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {"type": "string"},
+        "subject": {"type": "string"},
+        "body": {"type": "string"}
+      },
+      "required": ["to", "subject", "body"]
+    }
+  }
+]</code></pre>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q5：Agent 核心能力二：记忆机制</div>
+        <div class="a">
+          <p>传统 LLM 每次对话都是「失忆」的，Agent 系统通常设计<b>两层记忆</b>：</p>
+          <ul>
+            <li><b>短期记忆</b>：当前任务执行过程中的中间状态、已经调过哪些工具、拿到了什么结果。保证一个长任务里，Agent 不会中途「失忆」忘了之前做过的步骤。</li>
+            <li><b>长期记忆</b>：跨任务、跨会话需要持久化的信息，比如用户偏好、历史交互、领域知识。常用向量数据库存储，按相似度检索相关记忆。</li>
+          </ul>
+          <p>只有「能做事」（工具）+「能记事」（记忆）还差最后一块拼图——也是 Agent 最像「人」的地方。</p>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q6：Agent 核心能力三：多步推理与自我纠错</div>
+        <div class="a">
+          <p>这一点经常被忽略，但其实是 Agent 区别于简单自动化脚本的关键。</p>
+          <p>Agent 在执行过程中如果某一步失败，<b>不会直接崩掉</b>，而是能：</p>
+          <ul>
+            <li>感知到失败 → 分析原因 → 换一种方式重试。</li>
+            <li>用关键词 A 搜索没找到有用信息 → 自己换关键词 B 再搜一次。</li>
+            <li>调用某个 API 报错 → 检查参数是否正确 → 修正后重试。</li>
+          </ul>
+          <p>这就像一个真正在「思考」的执行者，碰到障碍会绕路走，而不是一条路走到黑。</p>
+          <p>更进一步，它还能在完成某一步之后<b>回头审视</b>：我做的这步对不对？结果和预期一致吗？要不要调整后续的计划？</p>
+          <p>这种「<b>边做边反思</b>」的能力，让 Agent 在面对复杂、不确定的任务时，表现远比死板的自动化流程好得多。</p>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q7：为什么 Agent 现在才爆发？三个条件</div>
+        <div class="a">
+          <p>Agent 概念其实很早就有了，但到 2024、2025 年才真正火起来。三个条件同时成熟：</p>
+          <ul>
+            <li><b>① 大模型能力跨过「能用」门槛</b>：从 GPT-4、Claude 3 这一代开始，模型的推理能力、指令遵循能力才达到「能拆解任务、判断下一步该调哪个工具」的水平。</li>
+            <li><b>② 工具调用的标准化</b>：OpenAI 2023 年推出 Function Calling，让模型能以结构化 JSON 格式输出工具调用请求，很快被各家厂商跟进。有了统一协议，工具接入的成本大幅下降。</li>
+            <li><b>③ 配套生态的完善</b>：LangChain、LlamaIndex 等框架把 Agent 开发门槛大幅降低；向量数据库解决长期记忆存储；各种 API 服务让可调用工具越来越丰富。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q8：Agent 生态最新趋势：MCP 与 A2A 两个协议</div>
+        <div class="a">
+          <p>Agent 越来越多，两个核心问题浮现：<b>工具怎么统一管理？Agent 之间怎么协作？</b>催生了两个非常重要的标准协议。</p>
+
+          <p><b>① MCP（Model Context Protocol，模型上下文协议）</b></p>
+          <ul>
+            <li>Anthropic 在 2024 年底提出，类比 Agent 工具世界的「<b>USB-C 接口</b>」。</li>
+            <li>没有 MCP 之前，M 个 Agent 框架 × N 个工具 = M×N 套适配代码。MCP 定义一套标准协议，把适配变成 M+N。</li>
+            <li>三层架构：<b>Host</b>（用户直接交互的 AI 应用，如 Claude Desktop、Cursor）→ <b>Client</b>（负责和 Server 建立连接、管理通信）→ <b>Server</b>（提供具体工具 / 资源）。</li>
+            <li>2025 年 12 月 Anthropic 把 MCP 正式捐给 Linux 基金会旗下新成立的 Agentic AI Foundation（AAIF），由 Anthropic、Block、OpenAI 等共同维护。</li>
+          </ul>
+
+          <p><b>② A2A（Agent2Agent，Agent 间通信协议）</b></p>
+          <ul>
+            <li>Google 2025 年 4 月推出。如果说 MCP 解决「Agent 怎么调工具」，A2A 解决「<b>Agent 怎么协作</b>」。</li>
+            <li>在多 Agent 系统里，不同 Agent 可能来自不同厂商、用不同框架开发，怎么互相发现对方能力、协调任务、传递中间结果？A2A 的核心设计是一个叫 <b>Agent Card</b> 的东西（类似"能力名片"），让 Agent 之间能互相描述自己会什么、怎么调用。</li>
+            <li>2025 年 6 月被 Google 捐给 Linux 基金会维护，SAP、Salesforce、ServiceNow 等大厂都在接入。</li>
+          </ul>
+
+          <p><b>两者的关系是互补：</b>MCP 管 Agent ↔ 工具的连接；A2A 管 Agent ↔ Agent 的通信。MCP 让每个 Agent 方便「伸手拿工具」；A2A 让多个 Agent 能「互相打招呼、分工合作」。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>四、面试总结</h2>
+      <div class="qa open">
+        <div class="q">Q9：面试踩过的三个雷？怎么避？</div>
+        <div class="a">
+          <p><b>三个雷区：</b></p>
+          <ul>
+            <li><b>雷一</b>：把 Agent 等同于「插件」或「工具调用」——最常见的误区，工具调用只是 Agent 能力的一部分，不是 Agent 本身。</li>
+            <li><b>雷二</b>：停在「能调工具」这一层，没有点出自主性——Agent 关键不是「有工具」，而是「<b>自己决定用不用、什么时候用、用哪个</b>」。</li>
+            <li><b>雷三</b>：忽略执行闭环——感知→规划→行动→再感知这个循环才是 Agent 区别于普通 LLM 的核心机制。</li>
+          </ul>
+          <p><b>答好这道题一定要点出三件事：</b></p>
+          <ul>
+            <li>① Agent 有<b>自主规划</b>能力，给它一个复杂目标能自己拆解成多步；</li>
+            <li>② 它能<b>行动</b>，通过工具调用跟外部世界真实交互；</li>
+            <li>③ 它有<b>闭环</b>，每步结果会反馈回来指导下一步，而不是「问一句答一句」就结束。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="qa">
+        <div class="q">Q10：易混淆点：模型是大脑，执行靠代码</div>
+        <div class="a">
+          <p>一个常被忽略的边界：<b>模型只做推理和决策，不直接执行任何动作</b>。</p>
+          <ul>
+            <li>模型输出"调用工具 X、传参数 Y"——这是<b>决策</b>。</li>
+            <li>真正去执行 X、拿到结果、把结果拼回上下文——这是<b>外部代码</b>做的。</li>
+            <li>这个边界既是<b>安全边界</b>（模型不能自己跑任意代码），也是<b>工程边界</b>（执行环境和模型是解耦的，可以替换）。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>五、参考与延伸</h2>
+      <div class="qa">
+        <div class="q">来源 / 延伸阅读</div>
+        <div class="a">
+          <ul>
+            <li>原文：小林面试笔记「1. 什么是 Agent？与大模型有什么本质不同？」</li>
+            <li>公众号：@小林面试笔记（持续更新 Agent 面试题）</li>
+            <li>延伸：MCP 协议规范、A2A 协议规范、Function Calling、ReAct 范式、多智能体协作。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  function hashKey(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+    return (h >>> 0).toString(36);
+  }
+  document.querySelectorAll('.qa').forEach(function (qa) {
+    var q = qa.querySelector('.q');
+    var a = qa.querySelector('.a');
+    if (!q || !a) return;
+    var text = q.innerHTML;
+    q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
+    q.setAttribute('role', 'button');
+    q.setAttribute('tabindex', '0');
+    q.addEventListener('click', function () { qa.classList.toggle('open'); });
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); qa.classList.toggle('open'); } });
+
+    var qtext = q.querySelector('.qtext') ? q.querySelector('.qtext').textContent.trim() : '';
+    var key = 'agent01-answer:' + hashKey(qtext);
+    var box = document.createElement('div');
+    box.className = 'answer-box';
+    box.innerHTML =
+      '<div class="ab-head"><span class="ab-title">✍️ 我的回答</span><span>自动保存到本地</span></div>' +
+      '<textarea placeholder="在此输入你的回答…"></textarea>' +
+      '<div class="ab-foot"><span class="ab-status"></span><button type="button" class="ab-clear">清除</button></div>';
+    qa.insertBefore(box, a);
+    var ta = box.querySelector('textarea');
+    var st = box.querySelector('.ab-status');
+    var saved = localStorage.getItem(key);
+    if (saved) { ta.value = saved; st.textContent = '已保存'; }
+    ta.addEventListener('input', function () {
+      try { localStorage.setItem(key, ta.value); st.textContent = ta.value ? '已保存' : ''; } catch (e) {}
+    });
+    box.querySelector('.ab-clear').addEventListener('click', function () {
+      ta.value = '';
+      try { localStorage.removeItem(key); st.textContent = ''; } catch (e) {}
+      ta.focus();
+    });
+  });
+  window.setAll = function (open) {
+    document.querySelectorAll('.qa').forEach(function (qa) { qa.classList.toggle('open', open); });
+  };
+
+  // —— 左侧：分类头点击展开/折叠 ——
+  document.querySelectorAll('.side-cat-head').forEach(function (head) {
+    head.addEventListener('click', function () {
+      var cat = head.parentElement;
+      cat.classList.toggle('open');
+    });
+  });
+
+  // —— 左侧：子题点击高亮 ——
+  document.querySelectorAll('.side-child, .side-intro').forEach(function (li) {
+    li.addEventListener('click', function () {
+      document.querySelectorAll('.side-child, .side-intro').forEach(function (x) { x.classList.remove('active'); });
+      li.classList.add('active');
+      // 滚动到第一个 section
+      var main = document.querySelector('.main');
+      if (main) main.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+})();
+</script>
+</body>
+</html>
