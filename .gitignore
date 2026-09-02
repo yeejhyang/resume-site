@@ -5,3 +5,7 @@ Thumbs.db
 # 本地备份
 .backup/
 index_index_backup.html
+index_old_backup.html
+
+# 测试残留
+.playwright-cli/

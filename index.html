@@ -28,10 +28,7 @@
     background: var(--card); border-right: 1px solid var(--side-border);
     display: flex; flex-direction: column;
   }
-  .side-top {
-    padding: 16px 18px 12px;
-    border-bottom: 1px solid #eef2f7;
-  }
+  .side-top { padding: 16px 18px 12px; border-bottom: 1px solid #eef2f7; }
   .side-top .app-title { font-size: 17px; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px; }
   .side-top .app-title .logo {
     width: 28px; height: 28px; border-radius: 8px;
@@ -46,8 +43,7 @@
   }
   .search-box input:focus { outline: none; border-color: var(--teal-bg); background: #fff; box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
   .search-box .sicon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 14px; }
-  .search-box .sclear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; color: #9ca3af; cursor: pointer; font-size: 14px; display: none; }
-  .search-box.has-input .sclear { display: block; }
+  .search-box .sclear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; color: #9ca3af; cursor: pointer; font-size: 14px; }
 
   .progress-wrap { margin-top: 12px; }
   .progress-bar-row { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
@@ -56,31 +52,18 @@
 
   .tree-wrap { flex: 1; overflow-y: auto; padding: 8px 0 24px; }
   .tree { list-style: none; }
-
-  .cat {
-    border-bottom: 1px solid #f4f6f9;
-  }
-  .cat-head {
-    display: flex; align-items: center; gap: 8px;
-    padding: 11px 18px; cursor: pointer; user-select: none;
-    font-weight: 700; font-size: 14px; color: #374151; transition: background .12s;
-  }
+  .cat { border-bottom: 1px solid #f4f6f9; }
+  .cat-head { display: flex; align-items: center; gap: 8px; padding: 11px 18px; cursor: pointer; user-select: none; font-weight: 700; font-size: 14px; color: #374151; transition: background .12s; }
   .cat-head:hover { background: #f3f6f9; color: var(--teal); }
   .cat-head .caret { width: 14px; text-align: center; color: #cbd5e1; font-size: 12px; transition: transform .18s; }
   .cat.open > .cat-head { color: var(--teal); }
   .cat.open > .cat-head .caret { transform: rotate(90deg); color: var(--teal-bg); }
   .cat-head .name { flex: 1; }
   .cat-head .cnt { font-size: 11px; color: var(--muted); font-weight: 500; background: #f1f3f6; padding: 1px 8px; border-radius: 10px; }
-  /* 分类收起时隐藏其下的文件列表，展开时显示 */
   .cat > ul { display: none; }
   .cat.open > ul { display: block; }
 
-  .file-item {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 18px 7px 40px; cursor: pointer;
-    font-size: 13px; font-weight: 600; color: #374151; transition: background .12s;
-    border-left: 3px solid transparent;
-  }
+  .file-item { display: flex; align-items: center; gap: 6px; padding: 7px 18px 7px 40px; cursor: pointer; font-size: 13px; font-weight: 600; color: #374151; transition: background .12s; border-left: 3px solid transparent; }
   .file-item:hover { background: #f3f6f9; color: var(--teal); }
   .file-item.active { background: #eef7f5; color: var(--teal); border-left-color: var(--teal-bg); font-weight: 700; }
   .file-item .fname { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -90,12 +73,7 @@
   .file-li > ul { display: none; }
   .file-li.expanded > ul { display: block; }
 
-  .sec-item {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: 7px 18px 7px 58px; cursor: pointer;
-    font-size: 12.5px; font-weight: 500; color: #4b5563; transition: background .12s;
-    border-left: 3px solid transparent; line-height: 1.4;
-  }
+  .sec-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 18px 7px 58px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #4b5563; transition: background .12s; border-left: 3px solid transparent; line-height: 1.4; }
   .sec-item:hover { background: #f3f6f9; color: var(--teal); }
   .sec-item.active { background: #eef7f5; color: var(--teal); border-left-color: var(--teal-bg); font-weight: 700; }
   .sec-item .sec-name { flex: 1; }
@@ -103,15 +81,23 @@
   .dot.known { background: var(--green); }
   .dot.fuzzy { background: var(--yellow); }
   .dot.unfamiliar { background: var(--red); }
+  .sec-item .drag-handle { flex: none; width: 14px; text-align: center; color: #cbd5e1; cursor: grab; font-size: 12px; margin-top: 2px; }
+  .sec-item .drag-handle:active { cursor: grabbing; }
+  .sec-item:hover .drag-handle { color: var(--teal-bg); }
+  .sec-item .sec-rename { flex: none; border: none; background: none; color: #cbd5e1; cursor: pointer; font-size: 12px; padding: 0 4px; }
+  .sec-item:hover .sec-rename { color: var(--teal); }
+  .sec-item .sec-rename:hover { color: #4338ca; }
+  .sec-item.dragging { opacity: .5; background: #eef7f5; }
+  .sec-item.drop-target { box-shadow: inset 2px 0 0 0 var(--teal-bg); background: #f0fbfa; }
+  .sec-item.rename-input { padding: 4px 18px 4px 58px; }
+  .sec-item .rename-inp { flex: 1; border: 1px solid var(--teal-bg); border-radius: 6px; padding: 4px 8px; font-size: 12.5px; font-family: inherit; }
+  .sec-item .rename-inp:focus { outline: none; box-shadow: 0 0 0 2px rgba(20,184,166,.15); }
 
   .empty-search { padding: 24px 18px; font-size: 12.5px; color: var(--muted); text-align: center; }
 
   /* ===== 右侧 ===== */
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .topbar {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 20px; background: #fff; border-bottom: 1px solid var(--side-border);
-  }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid var(--side-border); }
   .topbar .crumb { font-size: 12.5px; color: var(--muted); }
   .topbar .crumb b { color: var(--teal); }
   .topbar .spacer { flex: 1; }
@@ -127,18 +113,16 @@
   .content-wrap { flex: 1; overflow-y: auto; padding: 24px 26px 60px; }
   .content-inner { max-width: 980px; margin: 0 auto; }
 
-  /* 渲染后的文档样式 */
-  .doc-head {
-    background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff;
-    border-radius: 14px; padding: 26px 30px; margin-bottom: 18px;
-  }
+  .doc-head { background: linear-gradient(135deg, #0f766e, #14b8a6); color: #fff; border-radius: 14px; padding: 26px 30px; margin-bottom: 18px; }
   .doc-head h1 { font-size: 21px; font-weight: 800; }
   .doc-head .crumb { font-size: 12px; opacity: .9; margin-bottom: 4px; }
   .doc-head p { opacity: .92; font-size: 13px; margin-top: 6px; }
-  .doc-badge { display:inline-block; background: rgba(255,255,255,.18); border-radius: 20px; padding: 2px 12px; font-size: 12px; margin-right: 8px; margin-top: 8px; }
 
   .doc-section { background: var(--card); border-radius: 14px; padding: 22px 26px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-  .doc-section h2 { font-size: 16.5px; color: var(--teal); border-left: 4px solid var(--teal-bg); padding-left: 10px; margin-bottom: 14px; }
+  .sec-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .sec-title-row h2 { font-size: 16.5px; color: var(--teal); border-left: 4px solid var(--teal-bg); padding-left: 10px; flex: 1; margin: 0; }
+  .sec-add-btn { border: 1px dashed #99d6cd; background: #f0fbfa; color: #0f766e; font-size: 12px; font-weight: 600; padding: 3px 12px; border-radius: 14px; cursor: pointer; transition: all .15s; }
+  .sec-add-btn:hover { background: #0f766e; color: #fff; border-style: solid; }
 
   .doc-qa { margin-bottom: 12px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; background: #fff; transition: box-shadow .15s, border-color .15s; }
   .doc-qa:hover { border-color: #99d6cd; }
@@ -162,73 +146,54 @@
   .doc-a th, .doc-a td { border:1px solid #e5e7eb; padding:7px 10px; text-align:left; }
   .doc-a th { background:#eef7f5; color:#0f766e; }
 
-  /* 掌握度按钮组（每题） */
-  .mastery-bar { display:flex; align-items:center; gap:8px; padding:8px 14px; border-top:1px dashed #e5e7eb; margin:0 14px 12px; flex-wrap:wrap; }
-  .mastery-bar .lbl { font-size:11.5px; color:var(--muted); }
-  .mastery-bar button {
-    border:1px solid #e5e7eb; background:#fff; font-size:11.5px; font-weight:600;
-    padding:2px 10px; border-radius:12px; cursor:pointer; color:#6b7280; transition:all .15s;
-  }
-  .mastery-bar button:hover { transform: translateY(-1px); }
-  .mastery-bar button[data-m="known"]:hover, .mastery-bar button[data-m="known"].on { background:#dcfce7; border-color:#16a34a; color:#15803d; }
-  .mastery-bar button[data-m="fuzzy"]:hover, .mastery-bar button[data-m="fuzzy"].on { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
-  .mastery-bar button[data-m="unfamiliar"]:hover, .mastery-bar button[data-m="unfamiliar"].on { background:#fee2e2; border-color:#dc2626; color:#b91c1c; }
-
-  /* 抽背模式 */
-  body.quiz-mode .doc-a { display: none !important; }
-  body.quiz-mode .doc-qa.open .doc-a { display: block !important; }
-  .quiz-hint { background: var(--gold-bg); border:1px solid #fde68a; border-radius:8px; padding:12px 16px; font-size:13px; color:#78350f; margin-bottom:14px; line-height:1.7; display:none; }
-  body.quiz-mode .quiz-hint { display:block; }
-
-  /* —— 问题管理按钮（编辑/删除） —— */
-  .qa-tools {
-    display: flex; align-items: center; gap: 6px;
-    margin: 0 14px 10px; padding-left: 14px;
-  }
-  .qa-tools button {
-    border: 1px solid #e5e7eb; background: #fff; font-size: 11.5px; font-weight: 600;
-    padding: 3px 12px; border-radius: 12px; cursor: pointer; color: #6b7280; transition: all .15s;
-  }
+  .qa-tools { display: flex; align-items: center; gap: 6px; margin: 0 14px 10px; padding-left: 14px; }
+  .qa-tools button { border: 1px solid #e5e7eb; background: #fff; font-size: 11.5px; font-weight: 600; padding: 3px 12px; border-radius: 12px; cursor: pointer; color: #6b7280; transition: all .15s; }
   .qa-tools button:hover { transform: translateY(-1px); }
   .qa-tools .btn-edit { border-color: #c7d2fe; color: #4338ca; background: #eef2ff; }
   .qa-tools .btn-edit:hover { background: #4338ca; color: #fff; }
   .qa-tools .btn-del { border-color: #fecaca; color: #dc2626; background: #fef2f2; }
   .qa-tools .btn-del:hover { background: #dc2626; color: #fff; }
 
-  /* —— section 新增按钮 —— */
-  .sec-add {
-    display: inline-block; margin: 4px 0 14px;
-    border: 1px dashed #99d6cd; background: #f0fbfa; color: #0f766e;
-    font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 16px; cursor: pointer; transition: all .15s;
-  }
-  .sec-add:hover { background: #0f766e; color: #fff; border-style: solid; }
+  .mastery-bar { display:flex; align-items:center; gap:8px; padding:8px 14px; border-top:1px dashed #e5e7eb; margin:0 14px 12px; flex-wrap:wrap; }
+  .mastery-bar .lbl { font-size:11.5px; color:var(--muted); }
+  .mastery-bar button { border:1px solid #e5e7eb; background:#fff; font-size:11.5px; font-weight:600; padding:2px 10px; border-radius:12px; cursor:pointer; color:#6b7280; transition:all .15s; }
+  .mastery-bar button:hover { transform: translateY(-1px); }
+  .mastery-bar button[data-m="known"]:hover, .mastery-bar button[data-m="known"].on { background:#dcfce7; border-color:#16a34a; color:#15803d; }
+  .mastery-bar button[data-m="fuzzy"]:hover, .mastery-bar button[data-m="fuzzy"].on { background:#fef9c3; border-color:#ca8a04; color:#a16207; }
+  .mastery-bar button[data-m="unfamiliar"]:hover, .mastery-bar button[data-m="unfamiliar"].on { background:#fee2e2; border-color:#dc2626; color:#b91c1c; }
 
-  /* —— 编辑弹窗 —— */
-  .modal-mask {
-    position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 1000;
-    display: none; align-items: center; justify-content: center; padding: 20px;
-  }
+  body.quiz-mode .doc-a { display: none !important; }
+  body.quiz-mode .doc-qa.open .doc-a { display: block !important; }
+  .quiz-hint { background: var(--gold-bg); border:1px solid #fde68a; border-radius:8px; padding:12px 16px; font-size:13px; color:#78350f; margin-bottom:14px; line-height:1.7; display:none; }
+  body.quiz-mode .quiz-hint { display:block; }
+
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: #111827; color: #fff; padding: 10px 22px; border-radius: 10px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .3s; z-index: 99; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .welcome { text-align:center; padding: 60px 30px; color: var(--muted); }
+  .welcome .big { font-size: 42px; margin-bottom: 16px; }
+  .welcome h2 { font-size: 20px; color: var(--ink); margin-bottom: 10px; }
+  .welcome p { font-size: 13.5px; margin-bottom: 6px; }
+  .loading { text-align:center; padding: 60px; color: var(--muted); font-size: 14px; }
+
+  /* ===== 弹窗 ===== */
+  .modal-mask { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
   .modal-mask.show { display: flex; }
-  .modal {
-    background: #fff; border-radius: 14px; width: 100%; max-width: 720px; max-height: 86vh;
-    display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
-  }
+  .modal { background: #fff; border-radius: 14px; width: 100%; max-width: 760px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden; }
   .modal-head { padding: 16px 20px; border-bottom: 1px solid #eef2f7; display: flex; align-items: center; gap: 10px; }
   .modal-head h3 { font-size: 15px; color: #111827; flex: 1; }
   .modal-close { border: none; background: none; font-size: 20px; color: #9ca3af; cursor: pointer; line-height: 1; }
   .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
   .modal-body label { display: block; font-size: 12.5px; font-weight: 700; color: #374151; margin: 0 0 6px; }
   .modal-body .field { margin-bottom: 14px; }
-  .modal-body input[type=text] {
-    width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px;
-    font-size: 13.5px; font-family: inherit; transition: .15s;
-  }
+  .modal-body input[type=text] { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 9px 12px; font-size: 13.5px; font-family: inherit; transition: .15s; }
   .modal-body input[type=text]:focus { outline: none; border-color: var(--teal-bg); box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
-  .modal-body textarea {
-    width: 100%; min-height: 220px; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px;
-    font-size: 13px; line-height: 1.6; font-family: "SF Mono",Menlo,Consolas,monospace; resize: vertical; transition: .15s;
-  }
+  .edit-split { display: flex; gap: 14px; }
+  .edit-split .half { flex: 1; }
+  .modal-body textarea { width: 100%; min-height: 200px; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.6; font-family: "SF Mono",Menlo,Consolas,monospace; resize: vertical; transition: .15s; }
   .modal-body textarea:focus { outline: none; border-color: var(--teal-bg); box-shadow: 0 0 0 2px rgba(20,184,166,.12); }
+  .modal-preview { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; min-height: 200px; background: #fcfcfd; font-size: 13px; overflow-y: auto; max-height: 300px; }
+  .modal-preview ul { margin: 6px 0 6px 18px; }
   .modal-hint { font-size: 11.5px; color: #9ca3af; margin-top: 6px; }
   .modal-foot { padding: 14px 20px; border-top: 1px solid #eef2f7; display: flex; justify-content: flex-end; gap: 10px; }
   .modal-foot button { border-radius: 8px; font-size: 13px; font-weight: 600; padding: 8px 20px; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; transition: .15s; }
@@ -238,130 +203,212 @@
   .modal-foot .btn-danger { background: #dc2626; border-color: #dc2626; color: #fff; }
   .modal-foot .btn-danger:hover { background: #b91c1c; }
 
-  /* —— 拖拽 —— */
-  .sec-item.dragging { opacity: .5; background: #eef7f5; }
-  .sec-item.drop-target { box-shadow: inset 0 2px 0 0 var(--teal-bg); }
-  .sec-item .drag-handle { flex: none; width: 14px; text-align: center; color: #cbd5e1; cursor: grab; font-size: 12px; margin-top: 2px; }
-  .sec-item .drag-handle:active { cursor: grabbing; }
-  .sec-item:hover .drag-handle { color: var(--teal-bg); }
-  .sec-item .sec-rename { flex: none; border: none; background: none; color: #cbd5e1; cursor: pointer; font-size: 12px; padding: 0 4px; }
-  .sec-item:hover .sec-rename { color: var(--teal); }
-  .sec-item .sec-rename:hover { color: #4338ca; }
-  .random-btn { margin-right: auto; }
+  .confirm-mask { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .confirm-mask.show { display: flex; }
+  .confirm-box { background: #fff; border-radius: 12px; padding: 24px 26px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .confirm-box h4 { font-size: 15px; margin-bottom: 10px; color: #111827; }
+  .confirm-box p { font-size: 13px; color: #4b5563; margin-bottom: 18px; word-break: break-all; }
+  .confirm-box .cf-actions { display: flex; justify-content: flex-end; gap: 10px; }
+  .confirm-box .cf-actions button { border-radius: 8px; font-size: 13px; font-weight: 600; padding: 7px 18px; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; }
+  .confirm-box .cf-actions button.cf-ok { background: #dc2626; border-color: #dc2626; color: #fff; }
 
-  .toast {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: #111827; color: #fff; padding: 10px 22px; border-radius: 10px;
-    font-size: 13px; opacity: 0; pointer-events: none; transition: all .3s; z-index: 99;
-    box-shadow: 0 4px 16px rgba(0,0,0,.2);
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .welcome {
-    text-align:center; padding: 60px 30px; color: var(--muted);
-  }
-  .welcome .big { font-size: 42px; margin-bottom: 16px; }
-  .welcome h2 { font-size: 20px; color: var(--ink); margin-bottom: 10px; }
-  .welcome p { font-size: 13.5px; margin-bottom: 6px; }
-
-  .loading { text-align:center; padding: 60px; color: var(--muted); font-size: 14px; }
+  .key-hint { font-size: 11px; color: #9ca3af; margin-left: 8px; }
 
   @media (max-width: 860px) {
     .layout { flex-direction: column; height: auto; }
     .sidebar { flex: none; width: 100%; min-width: 0; max-height: 45vh; border-right: none; border-bottom: 1px solid var(--side-border); }
     .main { height: auto; }
     .content-wrap { padding: 16px; }
+    .edit-split { flex-direction: column; }
   }
 </style>
 </head>
 <body>
 
-<div class="layout">
-
-  <!-- ===== 左侧目录树 ===== -->
-  <aside class="sidebar">
-    <div class="side-top">
-      <div class="app-title"><span class="logo">八</span>八股背诵工作台</div>
-      <div class="search-box" id="searchBox">
-        <span class="sicon">🔍</span>
-        <input type="text" id="searchInput" placeholder="搜索题目 / 关键词…">
-        <button class="sclear" id="searchClear" title="清除">✕</button>
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-bar-row">
-          <span>背诵进度</span>
-          <span id="progressText">0 / 0（0%）</span>
+<div id="app">
+  <div class="layout">
+    <!-- ===== 左侧 ===== -->
+    <aside class="sidebar">
+      <div class="side-top">
+        <div class="app-title"><span class="logo">八</span>八股背诵工作台</div>
+        <div class="search-box">
+          <span class="sicon">🔍</span>
+          <input type="text" v-model="state.searchQuery" placeholder="搜索题目 / 关键词…" @input="onSearch">
+          <span class="sclear" v-if="state.searchQuery" @click="clearSearch">✕</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-      </div>
-    </div>
-    <div class="tree-wrap">
-      <ul class="tree" id="tree"></ul>
-      <div class="empty-search" id="emptySearch" style="display:none;">没有匹配的题目</div>
-    </div>
-  </aside>
-
-  <!-- ===== 右侧内容区 ===== -->
-  <main class="main">
-    <div class="topbar">
-      <span class="crumb" id="crumb">八股背诵工作台</span>
-      <span class="spacer"></span>
-      <div class="mode-group">
-        <button id="btnQuiz" class="danger">抽背盲答</button>
-      </div>
-      <div class="tool-group">
-        <button id="btnRandom" title="随机抽一题">🎲 随机</button>
-        <button id="btnExpand">全部展开</button>
-        <button id="btnCollapse">只看问题</button>
-      </div>
-    </div>
-    <div class="content-wrap" id="contentWrap">
-      <div class="content-inner" id="content">
-        <div class="welcome">
-          <div class="big">📚</div>
-          <h2>欢迎来到八股背诵工作台</h2>
-          <p>从左侧选择一篇文章开始背诵，或点击「🎲 随机」随机抽题。</p>
-          <p>每题可标记 🟢熟了 / 🟡生疏 / 🔴不会，进度会自动保存。</p>
-          <p>「抽背盲答」模式会隐藏所有答案，适合自测。</p>
+        <div class="progress-wrap">
+          <div class="progress-bar-row"><span>背诵进度</span><span>{{ progressText }}</span></div>
+          <div class="progress-bar"><div class="progress-fill" :style="{width: progressPct + '%'}"></div></div>
         </div>
       </div>
-    </div>
-  </main>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- 编辑问题弹窗 -->
-<div class="modal-mask" id="editModal">
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="modalTitle">编辑问题</h3>
-      <button class="modal-close" id="modalClose" title="关闭">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="field">
-        <label>问题标题</label>
-        <input type="text" id="editQTitle" placeholder="输入问题标题">
+      <div class="tree-wrap">
+        <!-- 搜索结果 -->
+        <ul class="tree" v-if="state.searchResults !== null">
+          <li v-for="r in state.searchResults" :key="r.text">
+            <div class="file-item" @click="gotoSearch(r)">
+              <span class="fname">{{ r.icon }} {{ r.text }}<span v-if="r.sub" style="font-size:11px;color:#9ca3af">（{{ r.sub }}）</span></span>
+            </div>
+          </li>
+          <li v-if="state.searchResults.length === 0"><div class="empty-search">没有匹配的题目</div></li>
+        </ul>
+        <!-- 目录树 -->
+        <ul class="tree" v-else>
+          <li v-for="cat in categories" :key="cat.id" class="cat" :class="{open: cat.open}">
+            <div class="cat-head" @click="toggleCat(cat)">
+              <span class="caret">▸</span>
+              <span class="name">{{ cat.name }}</span>
+              <span class="cnt">{{ cat.files.length }} 篇</span>
+            </div>
+            <ul class="tree">
+              <li v-for="f in cat.files" :key="f.file" class="file-li" :class="{expanded: f.expanded}">
+                <div class="file-item" :class="{active: f.file === state.currentFile}" @click="toggleFile(f)">
+                  <span class="fcaret">{{ f.hasSections ? '▸' : '' }}</span>
+                  <span class="fname">{{ f.meta.name }}</span>
+                  <span class="fprog" v-if="f.total">{{ f.marked }}/{{ f.total }}</span>
+                </div>
+                <ul class="tree" v-if="f.sections">
+                  <li v-for="(sec, idx) in f.sections" :key="idx">
+                    <div class="sec-item"
+                         :class="{active: state.currentFile===f.file && state.currentSecIdx===idx}"
+                         @click="selectSec(f, idx)"
+                         @dragover.prevent="onSecDragOver($event, f, idx)"
+                         @drop.prevent="onSecDrop($event, f, idx)">
+                      <span class="drag-handle" draggable="true"
+                            @dragstart="onDragStart($event, f, idx)"
+                            @dragend="onDragEnd">⠿</span>
+                      <span class="dot" :class="secMasteryDot(f, sec)"></span>
+                      <span class="sec-name" v-if="!(state.renameFile===f.file && state.renameIdx===idx)">{{ sec.name }}</span>
+                      <input v-else class="rename-inp" v-model="state.renameVal" @keydown.enter="confirmRename(f)" @keydown.esc="cancelRename"
+                             @click.stop ref="renameInput">
+                      <button class="sec-rename" @click.stop="startRename(f, idx)">✎</button>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
-      <div class="field">
-        <label>答案内容（支持 HTML，如 &lt;ul&gt; / &lt;li&gt; / &lt;p&gt; / &lt;code&gt;）</label>
-        <textarea id="editAHtml" placeholder="粘贴或输入答案 HTML"></textarea>
-        <div class="modal-hint">提示：&lt;ul&gt;&lt;li&gt;条目&lt;/li&gt;&lt;/ul&gt; 列表 / &lt;p&gt;段落&lt;/p&gt; / &lt;b&gt;加粗&lt;/b&gt; / &lt;pre&gt;&lt;code&gt;代码&lt;/code&gt;&lt;/pre&gt;</div>
+    </aside>
+
+    <!-- ===== 右侧 ===== -->
+    <main class="main">
+      <div class="topbar">
+        <span class="crumb"><b>{{ crumb }}</b></span>
+        <span class="spacer"></span>
+        <div class="mode-group">
+          <button :class="{active: state.quizMode, danger: state.quizMode}" @click="toggleQuiz">{{ state.quizMode ? '退出盲答' : '抽背盲答' }}</button>
+        </div>
+        <div class="tool-group">
+          <button @click="randomQuestion" title="随机抽一题">🎲 随机</button>
+          <button @click="setAll(true)">全部展开</button>
+          <button @click="setAll(false)">只看问题</button>
+        </div>
+      </div>
+      <div class="content-wrap" ref="contentWrap">
+        <div class="content-inner">
+          <!-- 欢迎页 -->
+          <div class="welcome" v-if="!state.currentFile">
+            <div class="big">📚</div>
+            <h2>欢迎来到八股背诵工作台</h2>
+            <p>从左侧选择一篇文章开始背诵，或点击「🎲 随机」随机抽题。</p>
+            <p>每题可标记 🟢熟了 / 🟡生疏 / 🔴不会，进度自动保存。</p>
+          </div>
+          <!-- 加载中 -->
+          <div class="loading" v-else-if="state.loading">加载中…</div>
+          <!-- 文档 -->
+          <template v-else>
+            <div class="doc-head" v-if="docHead">
+              <div class="crumb">{{ docHead.crumb || '' }}</div>
+              <h1>{{ docHead.title }}</h1>
+              <p v-if="docHead.desc">{{ docHead.desc }}</p>
+            </div>
+            <div v-for="(sec, si) in currentSections" :key="si" class="doc-section" :data-si="si">
+              <div class="sec-title-row">
+                <h2>{{ sec.name }}</h2>
+                <button class="sec-add-btn" @click="openAdd(sec.name)">+ 新增问题</button>
+              </div>
+              <div v-for="(qa, qi) in sec.qas" :key="qi" class="doc-qa" :class="{open: qa.open}">
+                <div class="doc-q" @click="qa.open = !qa.open">
+                  <span class="qicon">Q</span>
+                  <span class="qtext">{{ qa.title }}</span>
+                  <span class="caret">▸</span>
+                </div>
+                <div class="doc-a" v-html="qa.answerHtml"></div>
+                <div class="qa-tools">
+                  <button class="btn-edit" @click="openEdit(sec, qa)">✏️ 编辑</button>
+                  <button class="btn-del" @click="askDelete(qa)">🗑️ 删除</button>
+                </div>
+                <div class="mastery-bar">
+                  <span class="lbl">掌握度：</span>
+                  <button :class="{on: getMastery(qa)==='known'}" data-m="known" @click="setMastery(qa,'known')">🟢 熟了</button>
+                  <button :class="{on: getMastery(qa)==='fuzzy'}" data-m="fuzzy" @click="setMastery(qa,'fuzzy')">🟡 生疏</button>
+                  <button :class="{on: getMastery(qa)==='unfamiliar'}" data-m="unfamiliar" @click="setMastery(qa,'unfamiliar')">🔴 不会</button>
+                  <span class="key-hint">快捷键 1/2/3</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" :class="{show: state.toastShow}">{{ state.toastMsg }}</div>
+
+  <!-- 编辑弹窗 -->
+  <div class="modal-mask" :class="{show: state.modalShow}">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>{{ state.modalTitle }}</h3>
+        <button class="modal-close" @click="closeModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>问题标题</label>
+          <input type="text" v-model="state.editTitle" placeholder="输入问题标题" @keydown.enter="saveModal">
+        </div>
+        <div class="edit-split">
+          <div class="half">
+            <label>答案内容（HTML）</label>
+            <textarea v-model="state.editHtml" placeholder="支持 &lt;ul&gt;&lt;li&gt; / &lt;p&gt; / &lt;b&gt; / &lt;pre&gt;&lt;code&gt;"></textarea>
+            <div class="modal-hint">支持 &lt;ul&gt;&lt;li&gt;列表&lt;/li&gt;&lt;/ul&gt; / &lt;p&gt;段落&lt;/p&gt; / &lt;b&gt;加粗&lt;/b&gt; / &lt;pre&gt;&lt;code&gt;代码&lt;/code&gt;&lt;/pre&gt;</div>
+          </div>
+          <div class="half">
+            <label>实时预览</label>
+            <div class="modal-preview" v-html="state.editHtml"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button @click="closeModal">取消</button>
+        <button class="btn-primary" @click="saveModal">保存</button>
       </div>
     </div>
-    <div class="modal-foot">
-      <button type="button" id="modalCancel">取消</button>
-      <button type="button" class="btn-primary" id="modalSave">保存</button>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="confirm-mask" :class="{show: state.confirmShow}">
+    <div class="confirm-box">
+      <h4>删除问题</h4>
+      <p>确定删除「{{ state.confirmTitle }}」？此操作会写入源文件，不可撤销。</p>
+      <div class="cf-actions">
+        <button @click="state.confirmShow=false">取消</button>
+        <button class="cf-ok" @click="doDelete">删除</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="vendor/vue.global.prod.js"></script>
 <script>
 (function () {
   'use strict';
+  const { createApp, ref, reactive, computed, nextTick } = Vue;
 
   // ===== 文件注册表 =====
-  var FILE_META = {
+  const FILE_META = {
     '技术类别-01-大模型后训练.html': { cat: 'tech', catName: '技术类别', name: '大模型后训练', tags: 'SFT/RLHF/DPO/GRPO' },
     '技术类别-01-Agent面试题.html': { cat: 'tech', catName: '技术类别', name: 'Agent 面试题', tags: 'Agent 定义/工具调用/MCP' },
     '技术类别-02-Agent工程.html':   { cat: 'tech', catName: '技术类别', name: 'Agent 工程', tags: 'ReAct/MCP/LangGraph' },
@@ -373,752 +420,522 @@
     '03-RAGent-检索平台.html':      { cat: 'proj', catName: '项目', name: 'RAGent 检索平台', tags: 'RAG/Java/Milvus' },
     '00-面试自我介绍.html':         { cat: 'interview', catName: '面试', name: '面试自我介绍', tags: '背诵稿' }
   };
-  // 分类顺序
-  var CAT_ORDER = ['tech', 'proj', 'interview'];
-  var CAT_NAME = { tech: '技术类别', proj: '项目', interview: '面试' };
+  const CAT_ORDER = ['tech', 'proj', 'interview'];
+  const CAT_NAME = { tech: '技术类别', proj: '项目', interview: '面试' };
 
-  // ===== DOM =====
-  var tree = document.getElementById('tree');
-  var content = document.getElementById('content');
-  var contentWrap = document.getElementById('contentWrap');
-  var crumb = document.getElementById('crumb');
-  var searchInput = document.getElementById('searchInput');
-  var searchBox = document.getElementById('searchBox');
-  var searchClear = document.getElementById('searchClear');
-  var emptySearch = document.getElementById('emptySearch');
-  var progressText = document.getElementById('progressText');
-  var progressFill = document.getElementById('progressFill');
-  var btnQuiz = document.getElementById('btnQuiz');
-  var btnRandom = document.getElementById('btnRandom');
-  var btnExpand = document.getElementById('btnExpand');
-  var btnCollapse = document.getElementById('btnCollapse');
-  var toast = document.getElementById('toast');
-
-  // ===== 状态 =====
-  var state = {
-    currentFile: null,   // 当前渲染的文件名
-    sections: [],        // 当前文件解析出的 section 列表 [{el, name}]
-    quizMode: false,
-    // 各文件缓存的 fetch 结果
-    cache: {}
-  };
-
-  // ===== localStorage 键 =====
-  var KEY_M = 'baback.mastery.v1';   // {file: {qtext: m}}
-  var KEY_EXPAND = 'baback.expand.v1';
-  var KEY_QUIZ = 'baback.quiz.v1';
+  // localStorage 键
+  const KEY_M = 'baback.mastery.v1';
+  const KEY_EXPAND = 'baback.expand.v2';
+  const KEY_QUIZ = 'baback.quiz.v1';
 
   function loadJSON(key, def) { try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? def : v; } catch(e){ return def; } }
   function saveJSON(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
-
-  var mastery = loadJSON(KEY_M, {});
-  var expandedCats = loadJSON(KEY_EXPAND, { 'tech': true, 'proj': true, 'interview': true });
-  var expandedFiles = {}; // 文件项的 section 子列表展开状态（内存态）
-
   function qkey(file, qtext) { return file + '::' + qtext; }
-  function toastMsg(msg) {
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
-  }
 
-  // ===== 目录树构建 =====
-  function buildTree(filter) {
-    tree.innerHTML = '';
-    var totalKnown = 0, totalMarked = 0, totalQ = 0;
-
-    CAT_ORDER.forEach(function (catId) {
-      var files = Object.keys(FILE_META).filter(function (f) { return FILE_META[f].cat === catId; });
-      if (!files.length) return;
-
-      var catLi = document.createElement('li');
-      catLi.className = 'cat' + (expandedCats[catId] ? ' open' : '');
-
-      var head = document.createElement('div');
-      head.className = 'cat-head';
-      head.innerHTML = '<span class="caret">▸</span><span class="name">' + CAT_NAME[catId] + '</span><span class="cnt">' + files.length + ' 篇</span>';
-      head.addEventListener('click', function () {
-        var open = catLi.classList.toggle('open');
-        expandedCats[catId] = open; saveJSON(KEY_EXPAND, expandedCats);
-      });
-      catLi.appendChild(head);
-
-      var childUl = document.createElement('ul');
-      childUl.className = 'tree';
-
-      files.forEach(function (fname) {
-        var meta = FILE_META[fname];
-        // 统计该文件的已标记/总数（如果有缓存）
-        var fileMarked = countMarkedForFile(fname);
-        var fileTotal = fileTotalQ(fname);
-
-        var fileLi = document.createElement('li');
-        fileLi.className = 'file-li';
-        var sections = state.cache[fname] && state.cache[fname].sections;
-        // 展开状态：完全由用户点击控制（默认收起，点击展开）
-        // 注意：仅当文件已加载且有 section 时才标记 expanded，避免出现"▾箭头但无子项"的错乱状态
-        if (expandedFiles[fname] && sections && sections.length > 0) fileLi.classList.add('expanded');
-
-        var fItem = document.createElement('div');
-        fItem.className = 'file-item' + (state.currentFile === fname ? ' active' : '');
-        var pct = fileTotal ? Math.round(fileMarked / fileTotal * 100) : 0;
-        fItem.innerHTML =
-          (sections ? '<span class="fcaret">▸</span>' : '<span class="fcaret"></span>') +
-          '<span class="fname">' + meta.name + '</span>' +
-          (fileTotal ? '<span class="fprog">' + fileMarked + '/' + fileTotal + '</span>' : '');
-        fItem.addEventListener('click', function () {
-          // toggle 展开/收起 section 子列表（无论文件是否已加载）
-          var wasExpanded = fileLi.classList.contains('expanded');
-          fileLi.classList.toggle('expanded');
-          expandedFiles[fname] = !wasExpanded;
-          loadFile(fname);
-        });
-        fileLi.appendChild(fItem);
-
-        // 子 section（仅在已加载时显示）
-        var secUl = document.createElement('ul');
-        secUl.className = 'tree';
-        if (sections) {
-          sections.forEach(function (sec, idx) {
-            var dotCls = sectionMasteryDot(fname, sec);
-            var secItem = document.createElement('div');
-            secItem.className = 'sec-item';
-            secItem.dataset.file = fname;
-            secItem.dataset.idx = idx;
-            secItem.innerHTML =
-              '<span class="drag-handle" draggable="true" title="拖动排序">⠿</span>' +
-              '<span class="dot ' + dotCls + '"></span>' +
-              '<span class="sec-name">' + sec.name + '</span>' +
-              '<button type="button" class="sec-rename" title="修改名称">✎</button>';
-            secItem.addEventListener('click', function (e) {
-              if (e.target.classList.contains('drag-handle') || e.target.classList.contains('sec-rename')) return;
-              e.stopPropagation();
-              loadFile(fname, idx);
-            });
-            secItem.querySelector('.sec-rename').addEventListener('click', function (e) {
-              e.stopPropagation();
-              renameSection(fname, idx, sec.name);
-            });
-            setupSectionDrag(secItem, fname, idx);
-            secUl.appendChild(secItem);
-          });
-        }
-        fileLi.appendChild(secUl);
-        childUl.appendChild(fileLi);
-      });
-
-      catLi.appendChild(childUl);
-      tree.appendChild(catLi);
-    });
-
-    // 更新进度
-    var markedAll = countAllMarked();
-    var totalAll = totalAllQ();
-    progressText.textContent = markedAll + ' / ' + totalAll + '（' + (totalAll ? Math.round(markedAll/totalAll*100) : 0) + '%）';
-    progressFill.style.width = (totalAll ? Math.min(100, markedAll/totalAll*100) : 0) + '%';
-  }
-
-  function countMarkedForFile(fname) {
-    var n = 0;
-    Object.keys(mastery).forEach(function (k) { if (k.indexOf(fname + '::') === 0) n++; });
-    return n;
-  }
-  function countAllMarked() { return Object.keys(mastery).length; }
-  function fileTotalQ(fname) {
-    var c = state.cache[fname];
-    if (!c || !c.sections) return 0;
-    var n = 0;
-    c.sections.forEach(function (s) { n += s.qCount; });
-    return n;
-  }
-  function totalAllQ() {
-    var n = 0;
-    Object.keys(FILE_META).forEach(function (f) { n += fileTotalQ(f); });
-    return n;
-  }
-
-  // ===== 加载文件 =====
-  function loadFile(fname, scrollIdx) {
-    // 更新当前选中
-    state.currentFile = fname;
-    crumb.textContent = FILE_META[fname] ? FILE_META[fname].catName + ' / ' + FILE_META[fname].name : fname;
-    buildTree();
-
-    content.innerHTML = '<div class="loading">加载中…</div>';
-    var done = function () {
-      renderFile(fname, state.cache[fname]);
-      if (scrollIdx != null) scrollToSec(scrollIdx);
-    };
-
-    if (state.cache[fname]) {
-      done();
-    } else {
-      fetch(fname).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      }).then(function (html) {
-        state.cache[fname] = parseDocument(html);
-        done();
-        buildTree(); // 重新渲染目录以显示 section
-      }).catch(function (e) {
-        content.innerHTML = '<div class="welcome"><div class="big">⚠️</div><h2>加载失败</h2><p>' + e.message + '</p><p>请通过 <code>node server.js</code> 启动本地服务后访问（file:// 协议下无法 fetch）。</p></div>';
-      });
-    }
-  }
-
-  // ===== 解析 HTML 文档为可渲染结构 =====
+  // ===== 解析 HTML 文档 =====
   function parseDocument(html) {
-    var doc = document.implementation.createHTMLDocument('');
+    const doc = document.implementation.createHTMLDocument('');
     doc.documentElement.innerHTML = html;
-    // 提取样式
-    var styles = Array.prototype.map.call(doc.querySelectorAll('style'), function (s) { return s.textContent; }).join('\n');
-    // 提取 header 部分
-    var header = doc.querySelector('header');
-    var headerHtml = header ? header.outerHTML : '';
-
-    // 规范化：把原文件的 .qa/.q/.a 转成 .doc-qa/.doc-q/.doc-a，并标准化 qtext
-    doc.querySelectorAll('div.qa').forEach(function (qa) {
-      var q = qa.querySelector('.q');
-      if (q) {
-        // 包装问题文本为 .qtext
-        var text = q.innerHTML.trim();
-        q.innerHTML = '<span class="qicon">Q</span><span class="qtext">' + text + '</span><span class="caret">▸</span>';
-        q.className = 'doc-q';
-      }
-      var a = qa.querySelector('.a');
-      if (a) a.className = 'doc-a';
-      qa.className = 'doc-qa';
-
-      // 移除运行时才会生成的 answer-box / fix-bar（源文件里一般没有，防御性清理）
-      var box = qa.querySelector('.answer-box');
-      if (box) box.parentNode.removeChild(box);
-      var fix = qa.querySelector('.fix-bar');
-      if (fix) fix.parentNode.removeChild(fix);
-    });
-
-    // 提取所有 section（h2 分组）
-    var sections = [];
-    doc.querySelectorAll('div.section').forEach(function (sec) {
-      var h2 = sec.querySelector('h2');
-      var name = h2 ? h2.textContent.trim() : '(未命名小节)';
-      var qCount = sec.querySelectorAll('.doc-qa').length;
-      // 收集该 section 的所有问题文本（供搜索）
-      var qTexts = [];
-      sec.querySelectorAll('.doc-q .qtext').forEach(function (qel) { qTexts.push(qel.textContent.trim()); });
-      // 重建 section 内容：只保留 h2 + doc-qa
-      var inner = '<h2>' + name + '</h2>';
-      sec.querySelectorAll('.doc-qa').forEach(function (qa) { inner += qa.outerHTML; });
-      sections.push({ name: name, qCount: qCount, qTexts: qTexts, innerHTML: inner });
-    });
-    return { styles: styles, headerHtml: headerHtml, sections: sections };
-  }
-
-  // ===== 渲染文件 =====
-  function renderFile(fname, data) {
-    var html = '';
-    // header（复用原文件 header，但去掉多余的返回链接等）
-    if (data.headerHtml) {
-      // 清理 header 里的 back 链接
-      var h = data.headerHtml.replace(/<a[^>]*class="back"[^>]*>.*?<\/a>/g, '');
-      html += '<div class="doc-head">' + h + '</div>';
+    // header
+    const header = doc.querySelector('header');
+    let headInfo = null;
+    if (header) {
+      const h1 = header.querySelector('h1');
+      const p = header.querySelector('p');
+      headInfo = {
+        title: h1 ? h1.textContent.trim() : '',
+        desc: p ? p.textContent.trim() : '',
+        crumb: (header.querySelector('.crumb') || {}).textContent || ''
+      };
     }
     // sections
-    data.sections.forEach(function (sec, idx) {
-      html += '<div class="doc-section" data-idx="' + idx + '">' + sec.innerHTML + '</div>';
-    });
-
-    content.innerHTML = html;
-
-    // 绑定交互
-    bindDocInteractions(fname);
-
-    // 样式注入
-    var styleEl = document.getElementById('doc-style');
-    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'doc-style'; document.head.appendChild(styleEl); }
-    // 只保留 doc- 相关样式，避免污染
-    styleEl.textContent = data.styles + '\n/* 覆盖：隐藏原 answer-box 的服务器同步按钮 */';
-
-    // 注入掌握度按钮到每个 qa
-    injectMasteryBars(fname);
-
-    // 注入问题编辑/删除按钮 + section 新增按钮
-    injectQATools(fname);
-
-    if (state.quizMode) document.body.classList.add('quiz-mode');
-    contentWrap.scrollTop = 0;
-  }
-
-  function bindDocInteractions(fname) {
-    // Q&A 折叠
-    content.querySelectorAll('.doc-qa').forEach(function (qa) {
-      var q = qa.querySelector('.doc-q');
-      if (!q) return;
-      q.addEventListener('click', function () { qa.classList.toggle('open'); });
-    });
-    // 记录当前文件所有 qa 供掌握度使用
-    state.sections = Array.prototype.map.call(content.querySelectorAll('.doc-section'), function (s) {
-      return { el: s, name: s.querySelector('h2').textContent.trim() };
-    });
-  }
-
-  // ===== 掌握度按钮 =====
-  function injectMasteryBars(fname) {
-    content.querySelectorAll('.doc-qa').forEach(function (qa) {
-      var qtextEl = qa.querySelector('.doc-q .qtext');
-      if (!qtextEl) return;
-      var qtext = qtextEl.textContent.trim();
-      var qk = qkey(fname, qtext);
-      var cur = mastery[qk] || '';
-
-      var bar = document.createElement('div');
-      bar.className = 'mastery-bar';
-      bar.innerHTML =
-        '<span class="lbl">掌握度：</span>' +
-        '<button data-m="known" title="熟了">🟢 熟了</button>' +
-        '<button data-m="fuzzy" title="生疏">🟡 生疏</button>' +
-        '<button data-m="unfamiliar" title="不会">🔴 不会</button>';
-      bar.querySelectorAll('button').forEach(function (btn) {
-        if (btn.dataset.m === cur) btn.classList.add('on');
-        btn.addEventListener('click', function () {
-          var m = btn.dataset.m;
-          // 切换：再点一次取消
-          if (mastery[qk] === m) { delete mastery[qk]; }
-          else { mastery[qk] = m; }
-          saveJSON(KEY_M, mastery);
-          bar.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.m === (mastery[qk]||'')); });
-          updateMasteryDots(fname);
-          buildTree();
-          toastMsg(m === 'known' ? '标记为：🟢 熟了' : m === 'fuzzy' ? '标记为：🟡 生疏' : '标记为：🔴 不会');
-        });
+    const sections = [];
+    doc.querySelectorAll('div.section').forEach(function (sec) {
+      const h2 = sec.querySelector('h2');
+      const name = h2 ? h2.textContent.trim() : '(未命名小节)';
+      const qas = [];
+      sec.querySelectorAll('div.qa').forEach(function (qa) {
+        const q = qa.querySelector('.q');
+        const a = qa.querySelector('.a');
+        if (!q) return;
+        const title = q.textContent.trim();
+        const answerHtml = a ? a.innerHTML : '';
+        qas.push({ title: title, answerHtml: answerHtml, open: false, mastery: '' });
       });
-      qa.appendChild(bar);
+      sections.push({ name: name, qas: qas });
     });
+    return { headInfo: headInfo, sections: sections };
   }
 
-  // ===== 问题管理：编辑/删除 + 新增 =====
-  var _editState = { mode: null, file: null, oldTitle: null, sectionName: null };
-  var _qaToolsBound = false;
-
-  function bindModal() {
-    if (_qaToolsBound) return;
-    _qaToolsBound = true;
-    var modal = document.getElementById('editModal');
-    var close = function () { modal.classList.remove('show'); };
-    document.getElementById('modalClose').addEventListener('click', close);
-    document.getElementById('modalCancel').addEventListener('click', close);
-    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
-    document.getElementById('modalSave').addEventListener('click', function () { doSaveQA(); });
-  }
-
-  function openEditModal(mode, file, opts) {
-    bindModal();
-    _editState.mode = mode;
-    _editState.file = file;
-    _editState.oldTitle = opts.oldTitle || null;
-    _editState.sectionName = opts.sectionName || null;
-    document.getElementById('modalTitle').textContent =
-      mode === 'add' ? '新增问题' : mode === 'edit' ? '编辑问题' : '问题';
-    document.getElementById('editQTitle').value = opts.title || '';
-    document.getElementById('editAHtml').value = opts.answerHtml || '';
-    document.getElementById('editModal').classList.add('show');
-    setTimeout(function () { document.getElementById('editQTitle').focus(); }, 50);
-  }
-
-  function doSaveQA() {
-    var title = document.getElementById('editQTitle').value.trim();
-    var answerHtml = document.getElementById('editAHtml').value.trim();
-    if (!title) { toastMsg('问题标题不能为空'); return; }
-    var f = _editState.file;
-    if (_editState.mode === 'edit') {
-      fetch('/api/qa/update', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: f, oldTitle: _editState.oldTitle, newTitle: title, answerHtml: answerHtml })
-      }).then(function (r) { return r.json(); }).then(function (res) {
-        if (res.ok) {
-          toastMsg('✅ 已保存修改');
-          document.getElementById('editModal').classList.remove('show');
-          reloadFileAfterEdit(f);
-        } else { toastMsg('保存失败：' + (res.error || '未知错误')); }
-      }).catch(function () { toastMsg('保存失败：网络错误'); });
-    } else if (_editState.mode === 'add') {
-      fetch('/api/qa/add', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: f, sectionName: _editState.sectionName, title: title, answerHtml: answerHtml })
-      }).then(function (r) { return r.json(); }).then(function (res) {
-        if (res.ok) {
-          toastMsg('✅ 已新增问题');
-          document.getElementById('editModal').classList.remove('show');
-          reloadFileAfterEdit(f);
-        } else { toastMsg('新增失败：' + (res.error || '未知错误')); }
-      }).catch(function () { toastMsg('新增失败：网络错误'); });
-    }
-  }
-
-  function deleteQuestion(fname, qtext) {
-    if (!confirm('确定删除问题「' + qtext.slice(0, 30) + (qtext.length > 30 ? '…' : '') + '」？此操作会写入源文件，不可撤销。')) return;
-    fetch('/api/qa/delete', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file: fname, title: qtext })
-    }).then(function (r) { return r.json(); }).then(function (res) {
-      if (res.ok) { toastMsg('🗑️ 已删除问题'); reloadFileAfterEdit(fname); }
-      else { toastMsg('删除失败：' + (res.error || '未知错误')); }
-    }).catch(function () { toastMsg('删除失败：网络错误'); });
-  }
-
-  function reloadFileAfterEdit(fname) {
-    // 清除缓存，重新加载
-    state.cache[fname] = null;
-    delete state.cache[fname];
-    // 清理旧的掌握度记录里已删除的问题（保留，不强制清理）
-    loadFile(fname);
-  }
-
-  function injectQATools(fname) {
-    // 给每个 .doc-qa 加编辑/删除按钮
-    content.querySelectorAll('.doc-qa').forEach(function (qa) {
-      var qtextEl = qa.querySelector('.doc-q .qtext');
-      if (!qtextEl) return;
-      var qtext = qtextEl.textContent.trim();
-      var tools = document.createElement('div');
-      tools.className = 'qa-tools';
-      tools.innerHTML =
-        '<button type="button" class="btn-edit">✏️ 编辑</button>' +
-        '<button type="button" class="btn-del">🗑️ 删除</button>';
-      var btnEdit = tools.querySelector('.btn-edit');
-      var btnDel = tools.querySelector('.btn-del');
-      btnEdit.addEventListener('click', function (e) {
-        e.stopPropagation();
-        // 提取答案 HTML（去掉已注入的掌握度条/tools）
-        var a = qa.querySelector('.doc-a');
-        var answerHtml = a ? a.innerHTML : '';
-        // 移除 answer 里可能残留的 fix-bar
-        answerHtml = answerHtml.replace(/<div class="fix-bar">[\s\S]*?<\/div>/g, '');
-        openEditModal('edit', fname, { oldTitle: qtext, title: qtext, answerHtml: answerHtml });
+  // ===== 应用 =====
+  const app = createApp({
+    setup() {
+      const state = reactive({
+        currentFile: null,
+        currentSecIdx: null,
+        cache: {},
+        docData: null,
+        loading: false,
+        quizMode: loadJSON(KEY_QUIZ, false),
+        mastery: loadJSON(KEY_M, {}),
+        expandedCats: loadJSON(KEY_EXPAND, { tech: true, proj: true, interview: true }),
+        expandedFiles: {},
+        searchResults: null,
+        searchQuery: '',
+        modalShow: false,
+        modalMode: null,
+        modalSection: null,
+        modalTitle: '',
+        editQA: null,
+        editTitle: '',
+        editHtml: '',
+        confirmShow: false,
+        confirmQA: null,
+        confirmTitle: '',
+        renameFile: null,
+        renameIdx: null,
+        renameVal: '',
+        toastShow: false,
+        toastMsg: '',
+        dragState: { file: null, fromIdx: null },
+        dragFile: null,
+        dragFromIdx: null
       });
-      btnDel.addEventListener('click', function (e) {
-        e.stopPropagation();
-        deleteQuestion(fname, qtext);
-      });
-      qa.appendChild(tools);
-    });
 
-    // 给每个 .doc-section 加新增按钮
-    content.querySelectorAll('.doc-section').forEach(function (sec) {
-      var h2 = sec.querySelector('h2');
-      if (!h2) return;
-      var secName = h2.textContent.trim();
-      var addBtn = document.createElement('div');
-      addBtn.className = 'sec-add';
-      addBtn.textContent = '+ 新增问题';
-      addBtn.addEventListener('click', function () {
-        openEditModal('add', fname, { sectionName: secName, title: '', answerHtml: '' });
-      });
-      sec.insertBefore(addBtn, sec.querySelector('.doc-qa') || h2.nextSibling);
-    });
-  }
-
-  // ===== section 拖拽排序 + 改名 =====
-  var _dragFromIdx = null;
-  var _dragFile = null;
-
-  function setupSectionDrag(secItem, fname, idx) {
-    var handle = secItem.querySelector('.drag-handle');
-    if (!handle) return;
-    handle.addEventListener('dragstart', function (e) {
-      _dragFromIdx = parseInt(secItem.dataset.idx, 10);
-      _dragFile = fname;
-      secItem.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      try { e.dataTransfer.setData('text/plain', String(idx)); } catch (err) {}
-    });
-    handle.addEventListener('dragend', function () {
-      secItem.classList.remove('dragging');
-      document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('drop-target'); });
-    });
-    secItem.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      if (_dragFromIdx == null) return;
-      document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('drop-target'); });
-      secItem.classList.add('drop-target');
-      e.dataTransfer.dropEffect = 'move';
-    });
-    secItem.addEventListener('dragleave', function () { secItem.classList.remove('drop-target'); });
-    secItem.addEventListener('drop', function (e) {
-      e.preventDefault();
-      secItem.classList.remove('drop-target');
-      if (_dragFromIdx == null) return;
-      var toIdx = parseInt(secItem.dataset.idx, 10);
-      if (_dragFromIdx === toIdx) { _dragFromIdx = null; return; }
-      commitSectionReorder(fname, _dragFromIdx, toIdx);
-      _dragFromIdx = null;
-    });
-  }
-
-  function commitSectionReorder(fname, fromIdx, toIdx) {
-    var data = state.cache[fname];
-    if (!data || !data.sections) return;
-    // 重新排列 sections 数组
-    var arr = data.sections.slice();
-    var moved = arr.splice(fromIdx, 1)[0];
-    arr.splice(toIdx, 0, moved);
-    // 构造请求体（oldName 是原始名，newName 暂不变）
-    var sections = arr.map(function (s) { return { oldName: s.name, newName: s.name }; });
-    fetch('/api/section/reorder', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file: fname, sections: sections })
-    }).then(function (r) { return r.json(); }).then(function (res) {
-      if (res.ok) {
-        toastMsg('🔀 已调整小节顺序');
-        // 更新缓存中的 section 顺序（需重新 fetch 更可靠）
-        state.cache[fname] = null;
-        loadFile(fname);
-      } else { toastMsg('排序失败：' + (res.error || '未知错误')); }
-    }).catch(function () { toastMsg('排序失败：网络错误'); });
-  }
-
-  function renameSection(fname, idx, oldName) {
-    var newName = prompt('修改小节名称：', oldName);
-    if (newName == null || newName.trim() === '' || newName.trim() === oldName) return;
-    newName = newName.trim();
-    var data = state.cache[fname];
-    if (!data || !data.sections[idx]) return;
-    var sections = data.sections.map(function (s, i) { return { oldName: s.name, newName: i === idx ? newName : s.name }; });
-    fetch('/api/section/reorder', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file: fname, sections: sections })
-    }).then(function (r) { return r.json(); }).then(function (res) {
-      if (res.ok) {
-        toastMsg('✏️ 已修改名称');
-        state.cache[fname] = null;
-        loadFile(fname);
-      } else { toastMsg('改名失败：' + (res.error || '未知错误')); }
-    }).catch(function () { toastMsg('改名失败：网络错误'); });
-  }
-
-  // 汇总一个 section 内所有题目的掌握度，返回圆点 class
-  // 优先级：有「不会」→ red；否则有「生疏」→ yellow；有「熟了」→ green；都标记但无规则 → 混合取 green；无标记 → ''
-  function sectionMasteryDot(fname, sec) {
-    var data = state.cache[fname];
-    if (!data) return '';
-    // 解析该 section 的所有问题文本
-    var tmp = document.createElement('div');
-    tmp.innerHTML = sec.innerHTML;
-    var qtexts = [];
-    tmp.querySelectorAll('.doc-q .qtext').forEach(function (qel) { qtexts.push(qel.textContent.trim()); });
-
-    var hasRed = false, hasYellow = false, hasGreen = false, hasAny = false;
-    qtexts.forEach(function (t) {
-      var m = mastery[qkey(fname, t)];
-      if (m) { hasAny = true; }
-      if (m === 'unfamiliar') hasRed = true;
-      else if (m === 'fuzzy') hasYellow = true;
-      else if (m === 'known') hasGreen = true;
-    });
-    if (!hasAny) return '';
-    if (hasRed) return 'unfamiliar';
-    if (hasYellow) return 'fuzzy';
-    return 'known';
-  }
-
-  function updateMasteryDots(fname) {
-    // 重新计算当前已渲染目录中 sec-item 的圆点
-    document.querySelectorAll('.sec-item').forEach(function (secEl) {
-      var f = secEl.dataset.file, idx = secEl.dataset.idx;
-      if (!f || !state.cache[f]) return;
-      var sec = state.cache[f].sections[idx];
-      if (!sec) return;
-      var dotCls = sectionMasteryDot(f, sec);
-      var dot = secEl.querySelector('.dot');
-      if (dot) dot.className = 'dot' + (dotCls ? ' ' + dotCls : '');
-    });
-  }
-
-  function scrollToSec(idx) {
-    var target = content.querySelector('.doc-section[data-idx="' + idx + '"]');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // 高亮目录
-      document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('active'); });
-      var secItems = document.querySelectorAll('.sec-item[data-idx="' + idx + '"]');
-      if (secItems.length) secItems[0].classList.add('active');
-    }
-  }
-
-  // ===== 工具栏 =====
-  btnExpand.addEventListener('click', function () {
-    content.querySelectorAll('.doc-qa').forEach(function (qa) { qa.classList.add('open'); });
-  });
-  btnCollapse.addEventListener('click', function () {
-    content.querySelectorAll('.doc-qa').forEach(function (qa) { qa.classList.remove('open'); });
-    toastMsg('已折叠全部答案，进入刷题清单模式');
-  });
-  btnRandom.addEventListener('click', function () {
-    randomQuestion();
-  });
-  btnQuiz.addEventListener('click', function () {
-    state.quizMode = !state.quizMode;
-    saveJSON(KEY_QUIZ, state.quizMode);
-    if (state.quizMode) {
-      document.body.classList.add('quiz-mode');
-      btnQuiz.classList.add('active');
-      btnQuiz.textContent = '退出盲答';
-      // 折叠所有答案
-      content.querySelectorAll('.doc-qa').forEach(function (qa) { qa.classList.remove('open'); });
-      toastMsg('抽背模式：已隐藏所有答案，点击问题可对照');
-    } else {
-      document.body.classList.remove('quiz-mode');
-      btnQuiz.classList.remove('active');
-      btnQuiz.textContent = '抽背盲答';
-      toastMsg('已退出抽背模式');
-    }
-  });
-
-  function randomQuestion() {
-    // 抽取范围：所有含题目的文章（排除自我介绍等无 Q&A 的文件）
-    var files = Object.keys(FILE_META).filter(function (f) { return f !== '00-面试自我介绍.html'; });
-    // 优先用当前文件（已加载的），否则取第一个
-    var target = state.currentFile;
-    if (!target || !state.cache[target]) {
-      target = files[0];
-    }
-    // 确保已加载
-    var doRandom = function () {
-      // 从当前已渲染的 DOM 中抽取题目
-      var allQ = [];
-      content.querySelectorAll('.doc-qa').forEach(function (qa) {
-        var qel = qa.querySelector('.doc-q .qtext');
-        if (qel) allQ.push({ qa: qa, text: qel.textContent.trim() });
-      });
-      if (!allQ.length) { toastMsg('当前文章没有题目，请先切换文章'); return; }
-      var pick = allQ[Math.floor(Math.random() * allQ.length)];
-      // 滚动到对应题，并展开
-      pick.qa.classList.add('open');
-      pick.qa.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      toastMsg('🎲 随机抽题：' + pick.text.slice(0, 20) + '…');
-    };
-    if (state.cache[target]) { loadFile(target); setTimeout(doRandom, 300); }
-    else { loadFile(target); setTimeout(doRandom, 500); }
-  }
-
-  // ===== 搜索 =====
-  var searchTimer;
-  searchInput.addEventListener('input', function () {
-    searchBox.classList.toggle('has-input', !!searchInput.value);
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(function () { doSearch(searchInput.value.trim().toLowerCase()); }, 200);
-  });
-  searchClear.addEventListener('click', function () {
-    searchInput.value = ''; searchBox.classList.remove('has-input');
-    doSearch('');
-    searchInput.focus();
-  });
-
-  function doSearch(q) {
-    if (!q) {
-      emptySearch.style.display = 'none';
-      buildTree();
-      return;
-    }
-    tree.innerHTML = '';
-    emptySearch.style.display = 'none';
-    var results = [];
-
-    // 先收集：文件名 + 已加载文件的 section/题目
-    var pendingFiles = [];
-    Object.keys(FILE_META).forEach(function (fname) {
-      var meta = FILE_META[fname];
-      if (meta.name.toLowerCase().indexOf(q) >= 0) {
-        results.push({ file: fname, text: meta.name, type: 'file' });
+      let toastTimer = null;
+      function toast(msg) {
+        state.toastMsg = msg;
+        state.toastShow = true;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { state.toastShow = false; }, 1800);
       }
-      var data = state.cache[fname];
-      if (data) {
-        data.sections.forEach(function (s) {
-          if (s.name.toLowerCase().indexOf(q) >= 0) {
-            results.push({ file: fname, text: s.name, type: 'sec', sectionName: s.name });
-          }
-          // 匹配该 section 下的题目文本
-          if (s.qTexts) {
-            s.qTexts.forEach(function (qt) {
-              if (qt.toLowerCase().indexOf(q) >= 0) {
-                results.push({ file: fname, text: qt, type: 'q', sectionName: s.name });
-              }
-            });
-          }
-        });
-      } else {
-        pendingFiles.push(fname);
-      }
-    });
-    renderSearchResults(results, q);
 
-    // 对未加载的文件按需 fetch 解析，补充题目搜索
-    pendingFiles.forEach(function (fname) {
-      fetch(fname).then(function (r) { return r.text(); }).then(function (html) {
-        var parsed = parseDocument(html);
-        state.cache[fname] = parsed;
-        buildTree();
-        // 重新搜索补结果
-        var extra = [];
-        parsed.sections.forEach(function (s) {
-          if (s.name.toLowerCase().indexOf(q) >= 0) {
-            extra.push({ file: fname, text: s.name, type: 'sec', sectionName: s.name });
-          }
-          if (s.qTexts) {
-            s.qTexts.forEach(function (qt) {
-              if (qt.toLowerCase().indexOf(q) >= 0) {
-                extra.push({ file: fname, text: qt, type: 'q', sectionName: s.name });
-              }
-            });
-          }
+      // 目录结构 computed
+      const categories = computed(() => {
+        return CAT_ORDER.map(function (catId) {
+          const files = Object.keys(FILE_META).filter(function (f) { return FILE_META[f].cat === catId; });
+          return {
+            id: catId,
+            name: CAT_NAME[catId],
+            open: state.expandedCats[catId] !== false,
+            files: files.map(function (f) {
+              const cached = state.cache[f];
+              const sections = cached ? cached.sections.map(function (s, i) {
+                return Object.assign({}, s, { _idx: i });
+              }) : null;
+              // 统计
+              let marked = 0, total = 0;
+              if (sections) { sections.forEach(function (s) { total += s.qas.length; s.qas.forEach(function (q){ if (state.mastery[qkey(f, q.title)]) marked++; }); }); }
+              return {
+                file: f,
+                meta: FILE_META[f],
+                hasSections: !!sections,
+                sections: sections,
+                marked: marked,
+                total: total,
+                expanded: !!state.expandedFiles[f]
+              };
+            })
+          };
         });
-        if (extra.length) {
-          renderSearchResults(extra, q, true);
+      });
+
+      const progressText = computed(() => {
+        const marked = Object.keys(state.mastery).length;
+        const total = totalAllQ();
+        return marked + ' / ' + total + '（' + (total ? Math.round(marked / total * 100) : 0) + '%）';
+      });
+      const progressPct = computed(() => {
+        const marked = Object.keys(state.mastery).length;
+        const total = totalAllQ();
+        return total ? Math.min(100, marked / total * 100) : 0;
+      });
+
+      function totalAllQ() {
+        let n = 0;
+        Object.keys(FILE_META).forEach(function (f) {
+          const c = state.cache[f];
+          if (c) c.sections.forEach(function (s) { n += s.qas.length; });
+        });
+        return n;
+      }
+
+      // 直接返回真实响应式引用，保证 qa.open / 掌握度等可实时更新
+      const currentSections = computed(() => {
+        const data = state.docData;
+        return data ? data.sections : [];
+      });
+
+      function getMastery(qa) {
+        if (!state.currentFile) return '';
+        return state.mastery[qkey(state.currentFile, qa.title)] || '';
+      }
+
+      const docHead = computed(() => state.docData ? state.docData.headInfo : null);
+      const crumb = computed(() => {
+        if (!state.currentFile) return '八股背诵工作台';
+        const meta = FILE_META[state.currentFile];
+        return meta ? meta.catName + ' / ' + meta.name : state.currentFile;
+      });
+
+      // ===== 加载文件 =====
+      function loadFile(fname, secIdx) {
+        state.currentFile = fname;
+        state.currentSecIdx = (secIdx != null ? secIdx : null);
+        if (state.cache[fname]) {
+          state.docData = state.cache[fname];
+          state.loading = false;
+          if (secIdx != null) nextTick(function () { scrollToSec(secIdx); });
+        } else {
+          state.loading = true;
+          state.docData = null;
+          fetch(fname).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+            .then(function (html) {
+              state.cache[fname] = parseDocument(html);
+              state.docData = state.cache[fname];
+              state.loading = false;
+              if (secIdx != null) nextTick(function () { scrollToSec(secIdx); });
+            })
+            .catch(function (e) {
+              state.loading = false;
+              toast('加载失败：' + e.message + '（请用 node server.js 启动服务）');
+            });
         }
-      }).catch(function () {});
-    });
-  }
+      }
 
-  function renderSearchResults(results, q, append) {
-    if (!append) { tree.innerHTML = ''; emptySearch.style.display = 'none'; }
-    if (!results.length) {
-      if (!append) emptySearch.style.display = 'block';
-      return;
-    }
-    var ul = document.createElement('ul'); ul.className = 'tree';
-    results.forEach(function (r) {
-      var li = document.createElement('li');
-      var item = document.createElement('div');
-      item.className = 'file-item';
-      var prefix = r.type === 'q' ? '🔸 ' : r.type === 'sec' ? '📁 ' : '📄 ';
-      var sub = r.sectionName ? '<span style="font-size:11px;color:#9ca3af">（' + FILE_META[r.file].name + ' › ' + r.sectionName + '）</span>' : '';
-      item.innerHTML = '<span class="fname">' + prefix + r.text + sub + '</span>';
-      item.addEventListener('click', function () {
+      function scrollToSec(idx) {
+        const el = document.querySelector('.doc-section[data-si="' + idx + '"]');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const contentWrap = document.querySelector('.content-wrap');
+          if (contentWrap) contentWrap.scrollTop -= 80;
+        }
+      }
+
+      // ===== 目录交互 =====
+      function toggleCat(cat) { cat.open = !cat.open; state.expandedCats[cat.id] = cat.open; saveJSON(KEY_EXPAND, state.expandedCats); }
+
+      function toggleFile(f) {
+        state.expandedFiles[f.file] = !state.expandedFiles[f.file];
+        if (!state.cache[f.file]) {
+          // 未加载先展开标记
+          state.expandedFiles[f.file] = true;
+        }
+        loadFile(f.file);
+      }
+
+      function selectSec(f, idx) { loadFile(f.file, idx); }
+
+      // ===== 掌握度 =====
+      function setMastery(qa, m) {
+        const k = qkey(state.currentFile, qa.title);
+        if (state.mastery[k] === m) delete state.mastery[k];
+        else state.mastery[k] = m;
+        saveJSON(KEY_M, state.mastery);
+        // 更新文档里的 qa.mastery
+        state.docData.sections.forEach(function (s) {
+          s.qas.forEach(function (q) { if (q.title === qa.title) q.mastery = state.mastery[k] || ''; });
+        });
+        toast(m === 'known' ? '标记为：🟢 熟了' : m === 'fuzzy' ? '标记为：🟡 生疏' : '标记为：🔴 不会');
+      }
+
+      function secMasteryDot(f, sec) {
+        let hasAny = false, hasRed = false, hasYellow = false, hasGreen = false;
+        sec.qas.forEach(function (q) {
+          const m = state.mastery[qkey(f.file, q.title)];
+          if (m) hasAny = true;
+          if (m === 'unfamiliar') hasRed = true;
+          else if (m === 'fuzzy') hasYellow = true;
+          else if (m === 'known') hasGreen = true;
+        });
+        if (!hasAny) return '';
+        if (hasRed) return 'unfamiliar';
+        if (hasYellow) return 'fuzzy';
+        return 'known';
+      }
+
+      // ===== 工具栏 =====
+      function setAll(open) {
+        if (state.docData) state.docData.sections.forEach(function (s) { s.qas.forEach(function (q) { q.open = open; }); });
+      }
+
+      function toggleQuiz() {
+        state.quizMode = !state.quizMode;
+        saveJSON(KEY_QUIZ, state.quizMode);
+        document.body.classList.toggle('quiz-mode', state.quizMode);
+        if (state.quizMode) { setAll(false); toast('抽背模式：已隐藏所有答案'); }
+        else toast('已退出抽背模式');
+      }
+
+      function randomQuestion() {
+        const allQ = [];
+        if (state.docData) {
+          state.docData.sections.forEach(function (sec) {
+            sec.qas.forEach(function (q) { allQ.push({ sec: sec, q: q }); });
+          });
+        }
+        if (!allQ.length) { toast('当前文章没有题目'); return; }
+        const pick = allQ[Math.floor(Math.random() * allQ.length)];
+        pick.q.open = true;
+        nextTick(function () {
+          const wrap = document.querySelector('.content-wrap');
+          const el = wrap ? wrap.querySelector('.qtext') : null;
+          // 找到该题所在卡片
+          const cards = document.querySelectorAll('.doc-qa');
+          cards.forEach(function (card) {
+            const t = card.querySelector('.qtext');
+            if (t && t.textContent.trim() === pick.q.title) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          });
+        });
+        toast('🎲 随机抽题：' + pick.q.title.slice(0, 20) + '…');
+      }
+
+      // ===== 编辑/新增 =====
+      function openEdit(sec, qa) {
+        state.modalMode = 'edit';
+        state.modalSection = sec;
+        state.editQA = qa;
+        state.editTitle = qa.title;
+        state.editHtml = qa.answerHtml;
+        state.modalTitle = '编辑问题';
+        state.modalShow = true;
+      }
+      function openAdd(sectionName) {
+        state.modalMode = 'add';
+        state.modalSection = sectionName;
+        state.editQA = null;
+        state.editTitle = '';
+        state.editHtml = '';
+        state.modalTitle = '新增问题';
+        state.modalShow = true;
+      }
+      function closeModal() { state.modalShow = false; }
+
+      function saveModal() {
+        const title = state.editTitle.trim();
+        const html = state.editHtml.trim();
+        if (!title) { toast('问题标题不能为空'); return; }
+        const f = state.currentFile;
+        if (state.modalMode === 'edit') {
+          fetch('/api/qa/update', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: f, oldTitle: state.editQA.title, newTitle: title, answerHtml: html })
+          }).then(r => r.json()).then(function (res) {
+            if (res.ok) { toast('✅ 已保存修改'); state.modalShow = false; reloadFile(f); }
+            else toast('保存失败：' + (res.error || '未知错误'));
+          }).catch(() => toast('保存失败：网络错误'));
+        } else {
+          fetch('/api/qa/add', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: f, sectionName: state.modalSection, title: title, answerHtml: html })
+          }).then(r => r.json()).then(function (res) {
+            if (res.ok) { toast('✅ 已新增问题'); state.modalShow = false; reloadFile(f); }
+            else toast('新增失败：' + (res.error || '未知错误'));
+          }).catch(() => toast('新增失败：网络错误'));
+        }
+      }
+
+      // ===== 删除 =====
+      function askDelete(qa) {
+        state.confirmQA = qa;
+        state.confirmTitle = qa.title;
+        state.confirmShow = true;
+      }
+      function doDelete() {
+        const f = state.currentFile;
+        const title = state.confirmQA.title;
+        fetch('/api/qa/delete', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: f, title: title })
+        }).then(r => r.json()).then(function (res) {
+          if (res.ok) { toast('🗑️ 已删除问题'); state.confirmShow = false; reloadFile(f); }
+          else toast('删除失败：' + (res.error || '未知错误'));
+        }).catch(() => toast('删除失败：网络错误'));
+      }
+
+      function reloadFile(f) {
+        delete state.cache[f];
+        delete state.docData;
+        loadFile(f);
+      }
+
+      // ===== 改名 =====
+      function startRename(f, idx) {
+        state.renameFile = f.file;
+        state.renameIdx = idx;
+        state.renameVal = f.sections[idx].name;
+        nextTick(function () { const el = document.querySelector('.rename-inp'); if (el) el.focus(); });
+      }
+      function cancelRename() { state.renameFile = null; state.renameIdx = null; }
+      function confirmRename(f) {
+        const newName = state.renameVal.trim();
+        const oldName = f.sections[state.renameIdx].name;
+        if (!newName || newName === oldName) { cancelRename(); return; }
+        const data = state.cache[f.file];
+        if (!data) { cancelRename(); return; }
+        const sections = data.sections.map(function (s, i) { return { oldName: s.name, newName: i === state.renameIdx ? newName : s.name }; });
+        fetch('/api/section/reorder', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: f.file, sections: sections })
+        }).then(r => r.json()).then(function (res) {
+          cancelRename();
+          if (res.ok) { toast('✏️ 已修改名称'); delete state.cache[f.file]; loadFile(f.file, state.renameIdx); }
+          else toast('改名失败：' + (res.error || '未知错误'));
+        }).catch(() => { cancelRename(); toast('改名失败：网络错误'); });
+      }
+
+      // ===== 拖拽 =====
+      function onDragStart(e, f, idx) {
+        state.dragFile = f.file;
+        state.dragFromIdx = idx;
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(idx)); } catch (err) {}
+        setTimeout(function () { e.target.parentElement.classList.add('dragging'); }, 0);
+      }
+      function onSecDragOver(e, f, idx) {
+        if (state.dragFile == null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('drop-target'); });
+        e.currentTarget.classList.add('drop-target');
+      }
+      function onSecDrop(e, f, idx) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drop-target');
+        if (state.dragFile == null) return;
+        var fromIdx = state.dragFromIdx;
+        state.dragFile = null;
+        state.dragFromIdx = null;
+        if (fromIdx === idx) return;
+        commitReorder(f.file, fromIdx, idx);
+      }
+      function onDragEnd() {
+        state.dragFile = null;
+        state.dragFromIdx = null;
+        document.querySelectorAll('.sec-item').forEach(function (s) { s.classList.remove('dragging', 'drop-target'); });
+      }
+
+      function commitReorder(fname, fromIdx, toIdx) {
+        var data = state.cache[fname];
+        if (!data || !data.sections) return;
+        // 后端按 oldName 定位重排
+        var names = data.sections.map(function (s) { return s.name; });
+        var moved = names.splice(fromIdx, 1)[0];
+        names.splice(toIdx, 0, moved);
+        var sections = names.map(function (n) { return { oldName: n, newName: n }; });
+        fetch('/api/section/reorder', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: fname, sections: sections })
+        }).then(function (r) { return r.json(); }).then(function (res) {
+          if (res.ok) { toast('🔀 已调整小节顺序'); delete state.cache[fname]; loadFile(fname); }
+          else toast('排序失败：' + (res.error || '未知错误'));
+        }).catch(function () { toast('排序失败：网络错误'); });
+      }
+
+      // ===== 搜索 =====
+      function onSearch() {
+        const q = state.searchQuery.trim().toLowerCase();
+        if (!q) { state.searchResults = null; return; }
+        const results = [];
+        const pending = [];
+        Object.keys(FILE_META).forEach(function (fname) {
+          const meta = FILE_META[fname];
+          if (meta.name.toLowerCase().indexOf(q) >= 0) {
+            results.push({ file: fname, text: meta.name, icon: '📄', sub: '' });
+          }
+          const data = state.cache[fname];
+          if (data) {
+            data.sections.forEach(function (s) {
+              if (s.name.toLowerCase().indexOf(q) >= 0) results.push({ file: fname, text: s.name, icon: '📁', sub: meta.name });
+              s.qas.forEach(function (qobj) {
+                if (qobj.title.toLowerCase().indexOf(q) >= 0) results.push({ file: fname, text: qobj.title, icon: '🔸', sub: meta.name + ' › ' + s.name });
+              });
+            });
+          } else {
+            pending.push(fname);
+          }
+        });
+        state.searchResults = results;
+        // 按需 fetch 未加载文件补充
+        pending.forEach(function (fname) {
+          fetch(fname).then(r => r.text()).then(function (html) {
+            if (!state.searchQuery.trim().toLowerCase()) return;
+            const data = parseDocument(html);
+            state.cache[fname] = data;
+            const q = state.searchQuery.trim().toLowerCase();
+            const extra = [];
+            data.sections.forEach(function (s) {
+              if (s.name.toLowerCase().indexOf(q) >= 0) extra.push({ file: fname, text: s.name, icon: '📁', sub: FILE_META[fname].name });
+              s.qas.forEach(function (qobj) {
+                if (qobj.title.toLowerCase().indexOf(q) >= 0) extra.push({ file: fname, text: qobj.title, icon: '🔸', sub: FILE_META[fname].name + ' › ' + s.name });
+              });
+            });
+            if (extra.length) state.searchResults = state.searchResults.concat(extra);
+          }).catch(function () {});
+        });
+      }
+      function clearSearch() { state.searchQuery = ''; state.searchResults = null; }
+      function gotoSearch(r) {
+        state.searchQuery = '';
+        state.searchResults = null;
         loadFile(r.file);
-        // 定位到问题所在 section
-        if (r.sectionName) {
-          setTimeout(function () {
-            var secs = Array.prototype.map.call(content.querySelectorAll('.doc-section'), function (s) {
-              return { el: s, h2: s.querySelector('h2') ? s.querySelector('h2').textContent.trim() : '' };
-            });
-            secs.forEach(function (s, i) { if (s.h2 === r.sectionName) { scrollToSec(i); } });
-          }, 400);
-        }
-      });
-      li.appendChild(item);
-      ul.appendChild(li);
-    });
-    tree.appendChild(ul);
-  }
+        // 若带 section 定位
+        const q = r.text;
+        nextTick(function () {
+          const data = state.cache[r.file];
+          if (!data) return;
+          data.sections.forEach(function (s, i) {
+            if (s.name === q || s.qas.some(function (qq) { return qq.title === q; })) {
+              state.currentSecIdx = i;
+              scrollToSec(i);
+            }
+          });
+        });
+      }
 
-  // ===== 初始化 =====
-  buildTree();
-  if (loadJSON(KEY_QUIZ, false)) {
-    state.quizMode = true;
-    document.body.classList.add('quiz-mode');
-    btnQuiz.classList.add('active');
-    btnQuiz.textContent = '退出盲答';
-  }
+      // ===== 快捷键 =====
+      function findActiveQA() {
+        let lastOpen = null;
+        if (state.docData) {
+          state.docData.sections.forEach(function (s) {
+            s.qas.forEach(function (q) { if (q.open) lastOpen = q; });
+          });
+        }
+        if (lastOpen) return lastOpen;
+        return state.docData && state.docData.sections.length && state.docData.sections[0].qas.length
+          ? state.docData.sections[0].qas[0] : null;
+      }
+
+      function onKeydown(e) {
+        if (state.modalShow || state.confirmShow) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === '1' || e.key === '2' || e.key === '3') {
+          const openQa = findActiveQA();
+          if (openQa) setMastery(openQa, e.key === '1' ? 'known' : e.key === '2' ? 'fuzzy' : 'unfamiliar');
+        }
+      }
+      document.addEventListener('keydown', onKeydown);
+
+      // 初始化 quiz-mode class
+      if (state.quizMode) document.body.classList.add('quiz-mode');
+
+      // 首次加载自动展开第一个文件（可选）
+      // loadFile(Object.keys(FILE_META)[0]);
+
+      return {
+        state,
+        categories, progressText, progressPct, currentSections, docHead, crumb, getMastery,
+        loadFile, toggleCat, toggleFile, selectSec, setMastery, secMasteryDot,
+        setAll, toggleQuiz, randomQuestion, openEdit, openAdd, closeModal, saveModal,
+        askDelete, doDelete, startRename, cancelRename, confirmRename,
+        onDragStart, onSecDragOver, onSecDrop, onDragEnd, onSearch, clearSearch, gotoSearch, onKeydown, toast
+      };
+    }
+  });
+
+  app.mount('#app');
 })();
 </script>
 </body>
