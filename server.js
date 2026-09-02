@@ -131,6 +131,18 @@ function extractBlock(html, startPos) {
   return null;
 }
 
+/** 向前找某个 class 的 div 开标签（支持带其他属性） */
+function findClassDivStart(html, className, fromIndex) {
+  const re = new RegExp('<div\\b[^>]*class="' + className + '"[^>]*>', 'g');
+  let found = -1;
+  let m;
+  while ((m = re.exec(html))) {
+    if (m.index <= fromIndex) found = m.index;
+    else break;
+  }
+  return found;
+}
+
 /**
  * 定位某个 section（按标题文本）的完整块区间。
  */
@@ -139,8 +151,8 @@ function findSection(html, sectionName) {
   const re = new RegExp(pat);
   const m = re.exec(html);
   if (!m) return null;
-  // 从标题位置向前找 <div class="section"> 起点
-  const secStart = html.lastIndexOf('<div class="section">', m.index);
+  // 从标题位置向前找 class="section" 的 div 起点（支持带 id 等属性）
+  const secStart = findClassDivStart(html, 'section', m.index);
   if (secStart < 0) return null;
   return extractBlock(html, secStart);
 }
@@ -155,22 +167,23 @@ function findQABlock(html, qtext) {
   const m = re.exec(html);
   if (!m) return null;
   const qPos = m.index;
-  // 向前找 <div class="q"> 起点
-  const qTagStart = html.lastIndexOf('<div class="q">', qPos);
+  // 向前找 class="q" 的 div 起点（支持带其他属性）
+  const qTagStart = findClassDivStart(html, 'q', qPos);
   if (qTagStart < 0) return null;
   const qBlock = extractBlock(html, qTagStart);
   if (!qBlock) return null;
-  // q 块结束处应紧跟 .a 块或 </div>(qa结束)
-  // 向后找 <div class="qa"> 起点（在 q 之前）
-  const qaTagStart = html.lastIndexOf('<div class="qa">', qTagStart);
+  // 向后找 class="qa" 的 div 起点（在 q 之前）
+  const qaTagStart = findClassDivStart(html, 'qa', qTagStart);
   if (qaTagStart < 0) return null;
   const qaBlock = extractBlock(html, qaTagStart);
   if (!qaBlock) return null;
-  // 在 qa 块内部找 .a
-  const aTagPos = html.indexOf('<div class="a">', qBlock.end);
+  // 在 qa 块内部找 class="a" 的 div
+  const aRe = new RegExp('<div\\b[^>]*class="a"[^>]*>', 'g');
+  aRe.lastIndex = qBlock.end;
+  const aMatch = aRe.exec(html);
   let aBlock = null;
-  if (aTagPos >= 0 && aTagPos < qaBlock.end) {
-    aBlock = extractBlock(html, aTagPos);
+  if (aMatch && aMatch.index < qaBlock.end) {
+    aBlock = extractBlock(html, aMatch.index);
   }
   return {
     qaStart: qaBlock.start,
@@ -266,11 +279,12 @@ const server = http.createServer(async (req, res) => {
     if (!safeFile.startsWith(ROOT)) return sendJson(res, 403, { ok: false, error: '非法路径' });
     try {
       const content = fs.readFileSync(safeFile, 'utf8');
-      // 解析所有 section 块（按原文顺序）
+      // 解析所有 section 块（按原文顺序，支持 class="section" 带其他属性）
       const secs = [];
-      let pos = 0;
-      while ((idx = content.indexOf('<div class="section">', pos)) >= 0) {
-        const block = extractBlock(content, idx);
+      const secTagRe = /<div\b[^>]*class="section"[^>]*>/g;
+      let sm;
+      while ((sm = secTagRe.exec(content))) {
+        const block = extractBlock(content, sm.index);
         if (!block) break;
         // 提取该 section 的标题
         const h2m = content.indexOf('<h2>', block.start);
@@ -278,7 +292,7 @@ const server = http.createServer(async (req, res) => {
         let name = '';
         if (h2m >= 0 && h2End > h2m && h2m < block.end) name = content.slice(h2m + '<h2>'.length, h2End);
         secs.push({ name: name, block: block });
-        pos = block.end;
+        secTagRe.lastIndex = block.end;
       }
       if (!secs.length) return sendJson(res, 404, { ok: false, error: '未找到 section' });
 
